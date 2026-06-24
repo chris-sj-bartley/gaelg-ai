@@ -14,3 +14,4 @@ issues/
 .env
 .vscode/
 *.swp
+.claude/
