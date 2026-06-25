@@ -996,7 +996,9 @@ document.getElementById('langSwap').addEventListener('click',()=>{
   document.getElementById('translateInput').value='';
   document.getElementById('translateOutput').textContent='';
   document.getElementById('translateSpeakBtn').style.display='none';
-  document.getElementById('translateMicBtn').style.display=s.value==='gv'?'block':'none';
+  const tmic=document.getElementById('translateMicBtn');
+  tmic.style.display='block';
+  tmic.title=s.value==='gv'?'Record Manx speech':'Record English speech';
 });
 
 document.getElementById('translateBtn').addEventListener('click', async () => {
@@ -1068,7 +1070,9 @@ document.getElementById('translateSpeakBtn').addEventListener('click', async () 
           const blob=new Blob(tMicChunks,{type:'audio/webm'});
           const form=new FormData();
           form.append('file',new File([blob],'recording.webm',{type:'audio/webm'}));
-          const res=await fetch(`${API_BASE}/transcribe`,{method:'POST',body:form});
+          const srcLang=document.getElementById('srcLang').value;
+          const endpoint=srcLang==='gv'?'/transcribe':'/transcribe_en';
+          const res=await fetch(`${API_BASE}${endpoint}`,{method:'POST',body:form});
           const data=await res.json();
           if(!res.ok) throw new Error(data.detail||'Transcription failed.');
           document.getElementById('translateInput').value=data.transcript;

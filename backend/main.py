@@ -192,6 +192,11 @@ _symbols    = None
 whisper_model     = None
 whisper_processor = None
 
+# ASR (English) — standard Whisper for the Translate English mic
+whisper_en_model     = None
+whisper_en_processor = None
+whisper_en_device    = None
+
 # MT — both directions kept resident
 nllb_tokenizers = {}  # {"gv2en": tokenizer, "en2gv": tokenizer}
 nllb_models     = {}  # {"gv2en": model,     "en2gv": model}
@@ -200,6 +205,7 @@ nllb_models     = {}  # {"gv2en": model,     "en2gv": model}
 model_status = {
     "tts": False,
     "asr": False,
+    "asr_en": False,
     "mt": False,
     "vc": False,
 }
@@ -454,6 +460,31 @@ def load_asr():
     logger.info("Whisper loaded — ready")
 
 
+def load_asr_en():
+    """Standard Whisper (small) for English transcription on the Translate page."""
+    global whisper_en_model, whisper_en_processor, whisper_en_device
+
+    import torch
+    from transformers import WhisperForConditionalGeneration, WhisperProcessor
+
+    use_cuda = str(WHISPER_DEVICE).startswith("cuda") and torch.cuda.is_available()
+    whisper_en_device = WHISPER_DEVICE if use_cuda else "cpu"
+    logger.info(f"Loading English Whisper (small) → {whisper_en_device} ...")
+
+    sm_snapshot = next(
+        (Path(HF_HOME) / "hub" / "models--openai--whisper-small" / "snapshots").iterdir()
+    )
+    whisper_en_processor = WhisperProcessor.from_pretrained(sm_snapshot)
+    whisper_en_model = WhisperForConditionalGeneration.from_pretrained(sm_snapshot)
+    whisper_en_model.generation_config.forced_decoder_ids = (
+        whisper_en_processor.get_decoder_prompt_ids(language="english", task="transcribe")
+    )
+    whisper_en_model = whisper_en_model.eval().to(whisper_en_device)
+    if use_cuda:
+        whisper_en_model = whisper_en_model.half()
+    logger.info("English Whisper loaded — ready")
+
+
 def load_mt():
     global nllb_tokenizers, nllb_models
 
@@ -563,6 +594,34 @@ def transcribe_audio(audio_path: str) -> str:
     return transcript
 
 
+def transcribe_audio_en(audio_path: str) -> str:
+    import torch
+    import torchaudio
+
+    normalised_path = normalise_audio(audio_path)
+    try:
+        wav, sr = torchaudio.load(normalised_path)
+    finally:
+        os.unlink(normalised_path)
+
+    if sr != 16000:
+        wav = torchaudio.functional.resample(wav, sr, 16000)
+    wav = wav.mean(0)  # mono
+
+    inputs   = whisper_en_processor(wav.numpy(), sampling_rate=16000, return_tensors="pt")
+    features = inputs.input_features.to(whisper_en_device)
+    if str(whisper_en_device).startswith("cuda"):
+        features = features.half()
+
+    with torch.no_grad():
+        ids = whisper_en_model.generate(features, num_beams=4, max_new_tokens=444)
+
+    transcript = whisper_en_processor.tokenizer.decode(ids[0], skip_special_tokens=True).strip()
+    logger.info(f"Transcribed (EN): '{transcript[:60]}'")
+    record_request("asr")
+    return transcript
+
+
 def translate_text(direction: str, text: str) -> str:
     import torch
 
@@ -644,6 +703,16 @@ async def startup():
         model_status["asr"] = False
         model_errors["asr"] = str(e)
         logger.exception("✗ ASR failed to load")
+
+    # Load English ASR (Translate page mic)
+    try:
+        load_asr_en()
+        model_status["asr_en"] = True
+        logger.info("✓ English ASR loaded successfully")
+    except Exception as e:
+        model_status["asr_en"] = False
+        model_errors["asr_en"] = str(e)
+        logger.exception("✗ English ASR failed to load")
 
     # Load MT
     try:
@@ -871,12 +940,7 @@ async def get_audio(filename: str):
     return FileResponse(path, media_type="audio/wav", filename=filename)
 
 
-@app.post("/transcribe")
-async def transcribe(
-    request: Request,
-    files: Optional[List[UploadFile]] = File(None),
-    file: Optional[UploadFile] = File(None),
-):
+async def _run_transcription(request, files, file, transcribe_fn, status_key):
     ip = request.client.host if request.client else "unknown"
     allowed, retry_after = check_rate_limit(ip)
     if not allowed:
@@ -892,10 +956,10 @@ async def transcribe(
     if not files:
         raise HTTPException(status_code=400, detail="No files provided.")
 
-    if not model_status["asr"]:
+    if not model_status[status_key]:
         raise HTTPException(
             status_code=503,
-            detail=f"ASR model unavailable: {model_errors.get('asr', 'unknown error')}"
+            detail=f"ASR model unavailable: {model_errors.get(status_key, 'unknown error')}"
         )
 
     allowed_types = {"audio/wav", "audio/wave", "audio/x-wav", "audio/mpeg",
@@ -936,7 +1000,7 @@ async def transcribe(
 
             async with asr_sem:
                 transcript = await asyncio.wait_for(
-                    loop.run_in_executor(None, transcribe_audio, tmp_path),
+                    loop.run_in_executor(None, transcribe_fn, tmp_path),
                     timeout=TRANSCRIBE_TIMEOUT_SECONDS
                 )
             results.append({"filename": fname, "transcript": transcript})
@@ -959,6 +1023,24 @@ async def transcribe(
         return {"transcript": r["transcript"]}
 
     return {"results": results}
+
+
+@app.post("/transcribe")
+async def transcribe(
+    request: Request,
+    files: Optional[List[UploadFile]] = File(None),
+    file: Optional[UploadFile] = File(None),
+):
+    return await _run_transcription(request, files, file, transcribe_audio, "asr")
+
+
+@app.post("/transcribe_en")
+async def transcribe_en(
+    request: Request,
+    files: Optional[List[UploadFile]] = File(None),
+    file: Optional[UploadFile] = File(None),
+):
+    return await _run_transcription(request, files, file, transcribe_audio_en, "asr_en")
 
 
 class TranslateRequest(BaseModel):
