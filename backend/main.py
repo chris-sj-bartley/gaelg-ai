@@ -461,27 +461,41 @@ def load_asr():
 
 
 def load_asr_en():
-    """Standard Whisper (small) for English transcription on the Translate page."""
+    """Clean (non-finetuned) Whisper large-v3 for English on the Translate page.
+    Reuses the same local model files as the Manx ASR but without the Manx
+    fine-tuned checkpoint, decoding in English."""
     global whisper_en_model, whisper_en_processor, whisper_en_device
 
     import torch
-    from transformers import WhisperForConditionalGeneration, WhisperProcessor
+    from transformers import (
+        WhisperForConditionalGeneration,
+        WhisperFeatureExtractor,
+        WhisperTokenizer,
+        WhisperProcessor,
+    )
 
     use_cuda = str(WHISPER_DEVICE).startswith("cuda") and torch.cuda.is_available()
     whisper_en_device = WHISPER_DEVICE if use_cuda else "cpu"
-    logger.info(f"Loading English Whisper (small) → {whisper_en_device} ...")
+    logger.info(f"Loading English Whisper (large-v3, clean) → {whisper_en_device} ...")
 
-    sm_snapshot = next(
-        (Path(HF_HOME) / "hub" / "models--openai--whisper-small" / "snapshots").iterdir()
+    local_snapshot = next(
+        (WHISPER_HUB / "whisper_checkpoint" / "models--openai--whisper-large-v3" / "snapshots").iterdir()
     )
-    whisper_en_processor = WhisperProcessor.from_pretrained(sm_snapshot)
-    whisper_en_model = WhisperForConditionalGeneration.from_pretrained(sm_snapshot)
+    hf_snapshot = next(
+        (Path(HF_HOME) / "hub" / "models--openai--whisper-large-v3" / "snapshots").iterdir()
+    )
+    feature_extractor = WhisperFeatureExtractor.from_pretrained(local_snapshot)
+    tokenizer         = WhisperTokenizer.from_pretrained(hf_snapshot)
+    whisper_en_processor = WhisperProcessor(feature_extractor=feature_extractor, tokenizer=tokenizer)
+
+    whisper_en_model = WhisperForConditionalGeneration.from_pretrained(local_snapshot)
     whisper_en_model.generation_config.forced_decoder_ids = (
         whisper_en_processor.get_decoder_prompt_ids(language="english", task="transcribe")
     )
-    whisper_en_model = whisper_en_model.eval().to(whisper_en_device)
+    whisper_en_model = whisper_en_model.eval()
     if use_cuda:
         whisper_en_model = whisper_en_model.half()
+    whisper_en_model = whisper_en_model.to(whisper_en_device)
     logger.info("English Whisper loaded — ready")
 
 
