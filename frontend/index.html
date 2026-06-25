@@ -196,6 +196,7 @@ a.dl-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent);}
 .about-body{display:flex;flex-direction:column;gap:1.25rem;}
 .about-greeting{font-family:var(--serif);font-size:1.9rem;color:var(--accent);line-height:1.1;}
 .about-bio{font-size:0.97rem;font-weight:300;line-height:1.85;color:#3a3028;}
+.about-list{font-size:0.97rem;font-weight:300;line-height:1.7;color:#3a3028;padding-left:1.25rem;margin:0.75rem 0 0;display:flex;flex-direction:column;gap:0.5rem;}
 .about-contact-section{display:flex;flex-direction:column;gap:0.5rem;padding-top:1rem;border-top:1px solid var(--orange-rule);}
 .contact-label{font-family:var(--mono);font-size:0.6rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--orange-mid);margin-bottom:0.2rem;}
 .contact-pills{display:flex;flex-wrap:wrap;gap:0.6rem;}
@@ -338,7 +339,7 @@ button.action-btn.recording{background:var(--warn)!important;box-shadow:0 2px 10
   <main class="page-body">
 
     <div class="tab-panel active" id="tab-speak">
-      <div class="section-intro"><h2 data-i18n="sec.speak.h2">Text to Speech</h2><p data-i18n="sec.speak.p">Type or paste Manx text and listen to it spoken aloud.</p></div>
+      <div class="section-intro"><h2 data-i18n="sec.speak.h2">Text to Speech</h2><p data-i18n="sec.speak.p">Type or paste Manx text and listen to it spoken aloud. Due to compute constraints, text is limited to <strong>500 characters</strong>. For longer text or projects, <a href="#" onclick="switchTab('about');return false;" style="color:var(--orange-mid);text-decoration:underline;text-underline-offset:2px;">please get in touch</a>.</p></div>
       <div class="card card-speak">
         <div class="voice-select">
           <div class="voice-label" data-i18n="card.voice">Choose a voice</div>
@@ -418,7 +419,7 @@ button.action-btn.recording{background:var(--warn)!important;box-shadow:0 2px 10
     </div>
 
     <div class="tab-panel" id="tab-translate">
-      <div class="section-intro"><h2 data-i18n="sec.translate.h2">Translation</h2><p data-i18n="sec.translate.p">Translate between Manx Gaelic and English.</p></div>
+      <div class="section-intro"><h2 data-i18n="sec.translate.h2">Translation</h2><p data-i18n="sec.translate.p">Translate between Manx and English. Due to compute constraints, text is limited to <strong>500 characters</strong>. For longer text or projects, <a href="#" onclick="switchTab('about');return false;" style="color:var(--orange-mid);text-decoration:underline;text-underline-offset:2px;">please get in touch</a>.</p></div>
       <div class="card card-translate">
                 <select id="srcLang" style="display:none"><option value="gv">Gaelg (Manx)</option><option value="en">English</option></select>
         <select id="tgtLang" style="display:none"><option value="en">English</option><option value="gv">Gaelg (Manx)</option></select>
@@ -441,27 +442,34 @@ button.action-btn.recording{background:var(--warn)!important;box-shadow:0 2px 10
       <div class="about-project">
         <h3>About This Project</h3>
         <p>Gaelg AI is a collection of AI-powered tools for Manx Gaelic, developed as part of ongoing doctoral research into low-resource and endangered language speech technology at the University of Sheffield. The tools include a text-to-speech synthesiser, automatic speech recognition, and translation tools, all of which have been trained on Manx language resources.</p>
+        <p style="margin-top:1rem;font-size:0.9rem;color:#6b5f52;"><strong>Note:</strong> These tools are experimental. Output may contain errors and should be treated as approximate rather than authoritative.</p>
       </div>
       <div class="about-project">
         <h3>Why it matters</h3>
-        <p>Manx is a revitalised language with a small but growing community of speakers, and good language technology can help it thrive. These tools are built to support that on three fronts: <strong>language preservation</strong> — keeping Manx speech alive and usable in the digital age; <strong>assistive technology</strong> — giving learners and speakers new ways to hear, read, and produce the language; and <strong>education</strong> — supporting teachers and students with pronunciation, listening, and translation.</p>
+        <p>Good language technology for Manx can support a range of applications:</p>
+        <ul class="about-list">
+          <li><strong>Assistive technologies:</strong> new ways for speakers and learners to hear, read, and produce the language.</li>
+          <li><strong>Language preservation:</strong> keeping Manx speech and text alive and usable in the digital age.</li>
+          <li><strong>Education:</strong> supporting teachers and learners with pronunciation, listening, and translation.</li>
+        </ul>
       </div>
       <div class="about-project">
-        <h3>What's coming</h3>
-        <p>Future directions include more natural and varied voices, support for longer audio, better translation, and forced alignment to help learners line text up with speech. These tools are only as good as the data behind them — if you'd like to help shape what comes next, please <a href="#" onclick="document.getElementById('contributeSection').scrollIntoView({behavior:'smooth'});return false;" style="color:var(--orange-mid);text-decoration:underline;text-underline-offset:2px;">contribute</a>.</p>
+        <h3>Future work</h3>
+        <ul class="about-list">
+          <li>Improving the technologies (more natural voices, better recognition and translation).</li>
+          <li>Collecting more Manx speech and text data to train on.</li>
+          <li>Applying the tools to real uses such as assistive technologies, language preservation, and education.</li>
+        </ul>
       </div>
       <div class="about-project" id="contributeSection">
         <h3>Contribute</h3>
-        <p>These tools are only as good as the data behind them. Manx is a low-resource language, so every recording, correction, and example of natural speech or text makes a real difference. If you're a proficient Manx speaker, we'd love your help — contributing recordings or text, reviewing output for errors, or suggesting improvements. Feedback and ideas of any kind are very welcome.</p>
-        <div style="margin-top:1.25rem;"><a href="#" class="contact-pill" onclick="goToContact();return false;">✉ Get in touch</a></div>
-      </div>
-      <div class="about-project">
-        <h3>Usage</h3>
-        <ul style="font-size:0.97rem;font-weight:300;line-height:1.8;color:#3a3028;padding-left:1.25rem;margin:0;display:flex;flex-direction:column;gap:0.5rem;">
-          <li>Audio clips must be <strong>30 seconds or under</strong> and text input is limited to <strong>500 characters</strong>. For longer files, larger projects, or other enquiries, please <a href="#" onclick="selectSplashTab('about');return false;" style="color:var(--orange-mid);text-decoration:underline;text-underline-offset:2px;">get in touch</a>.</li>
-          <li>These tools are experimental — output may contain errors and should be treated as approximate rather than authoritative.</li>
-          <li>Data submitted to this platform is processed only to provide the requested service and is not retained. For full details, see the <a href="/privacy.html" style="color:var(--orange-mid);text-decoration:underline;text-underline-offset:2px;">Privacy Policy</a>.</li>
+        <p>These tools are only as good as the data behind them, and Manx is a low-resource language. Ways to help:</p>
+        <ul class="about-list">
+          <li>Provide data collections, or help run data collection campaigns.</li>
+          <li>Share general feedback on the tools and their output.</li>
+          <li>Offer specialised help with particular applications, for example education or health.</li>
         </ul>
+        <div style="margin-top:1.25rem;"><a href="#" class="contact-pill" onclick="goToContact();return false;">✉ Get in touch</a></div>
       </div>
       <div class="about-profile">
         <div style="grid-column:1/-1;margin-bottom:0.5rem;"><h3 style="font-family:var(--mono);font-size:0.63rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--orange-mid);display:flex;align-items:center;gap:0.5rem;">About Me<span style="flex:1;height:1px;background:var(--rule);display:block;margin-left:0.5rem;"></span></h3></div>
@@ -526,11 +534,11 @@ const T = {
     'tab.translate':      '🔄 Translate',
     'tab.about':          '👤 About',
     'sec.speak.h2':       'Text to Speech',
-    'sec.speak.p':        'Type or paste Manx text and listen to it spoken aloud.',
+    'sec.speak.p':        'Type or paste Manx text and listen to it spoken aloud. Due to compute constraints, text is limited to <strong>500 characters</strong>. For longer text or projects, <a href="#" onclick="switchTab(\'about\');return false;" style="color:var(--orange-mid);text-decoration:underline;text-underline-offset:2px;">please get in touch</a>.',
     'sec.listen.h2':      'Automatic Speech Recognition',
     'sec.listen.p':       'Upload a Manx audio file or record directly, then transcribe. Due to compute constraints, clips must be <strong>30 seconds or under</strong>. For longer files or projects, <a href="#" onclick="switchTab(\'about\');return false;" style="color:var(--orange-mid);text-decoration:underline;text-underline-offset:2px;">please get in touch</a>.',
     'sec.translate.h2':   'Translation',
-    'sec.translate.p':    'Type or paste Manx or English text and translate.',
+    'sec.translate.p':    'Translate between Manx and English. Due to compute constraints, text is limited to <strong>500 characters</strong>. For longer text or projects, <a href="#" onclick="switchTab(\'about\');return false;" style="color:var(--orange-mid);text-decoration:underline;text-underline-offset:2px;">please get in touch</a>.',
     'sec.about.h2':       'About',
     'card.speak':         'Enter Manx text',
     'card.voice':         'Choose a voice',
