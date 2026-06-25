@@ -96,11 +96,11 @@ textarea::placeholder{color:#b0a090;}
 .char-count{font-family:var(--mono);font-size:0.67rem;color:#b0a090;text-align:right;margin-top:0.4rem;}
 .char-count.warn{color:var(--warn);}
 .voice-select{border:1.5px solid var(--orange-rule);border-radius:var(--r-sm);overflow:hidden;margin-bottom:1rem;background:#fff;}
-.voice-label{font-family:var(--mono);font-size:0.63rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--orange-mid);padding:0.7rem 1rem;border-bottom:1.5px solid var(--orange-rule);}
-.voice-row{display:flex;align-items:center;gap:1rem;padding:0.7rem 1rem;}
-.voice-field-label{font-family:var(--mono);font-size:0.63rem;letter-spacing:0.14em;text-transform:uppercase;color:#8a6040;flex-shrink:0;min-width:64px;}
-.gender-toggle{display:flex;gap:0;border:1.5px solid var(--orange-rule);border-radius:var(--r-sm);overflow:hidden;flex:1;}
-.gender-btn{font-family:var(--mono);font-size:0.78rem;letter-spacing:0.08em;text-transform:uppercase;background:#fff;color:var(--orange-mid);border:none;padding:0.6em 1.25em;cursor:pointer;transition:background 0.15s,color 0.15s;flex:1;display:inline-flex;align-items:center;justify-content:center;gap:0.45em;}
+.voice-label{font-family:var(--mono);font-size:0.78rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--orange-mid);padding:0.7rem 1rem;border-bottom:1.5px solid var(--orange-rule);}
+.voice-row{display:flex;align-items:stretch;}
+.voice-field-label{font-family:var(--mono);font-size:0.78rem;letter-spacing:0.14em;text-transform:uppercase;color:#8a6040;align-self:center;padding:0 1rem;flex-shrink:0;}
+.gender-toggle{display:flex;margin-left:auto;border-left:1.5px solid var(--orange-rule);}
+.gender-btn{font-family:var(--mono);font-size:0.78rem;letter-spacing:0.08em;text-transform:uppercase;background:#fff;color:var(--orange-mid);border:none;padding:0.6em 1.5em;cursor:pointer;transition:background 0.15s,color 0.15s;display:inline-flex;align-items:center;justify-content:center;gap:0.45em;}
 .gender-btn:not(:last-child){border-right:1.5px solid var(--orange-rule);}
 .gender-btn.active{background:var(--orange-mid);color:#fff;}
 .gender-btn:not(.active):hover{background:var(--orange-pale);}
