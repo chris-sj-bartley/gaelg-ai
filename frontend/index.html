@@ -114,11 +114,10 @@ textarea::placeholder{color:#b0a090;}
 .ls-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.25rem;position:relative;}
 .listen-icon-btn{width:88px;height:88px;border-radius:50%;border:1.5px solid var(--orange-mid);background:#fff;color:var(--orange-mid);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:background var(--transition),color var(--transition),transform 0.12s;}
 .listen-icon-btn:hover{background:var(--orange-mid);color:#fff;transform:translateY(-2px);}
-.record-btn{width:88px;height:88px;border-radius:50%;border:1.5px solid #c0392b;background:#fff;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0;transition:transform 0.12s,box-shadow var(--transition);}
-.record-btn:hover{transform:translateY(-2px);box-shadow:0 2px 10px rgba(192,57,43,0.35);}
-.record-icon{width:60px;height:60px;border-radius:50%;background:#c0392b;transition:width 0.2s ease,height 0.2s ease,border-radius 0.2s ease;}
-.record-btn.recording{animation:recPulse 1.2s ease-in-out infinite;}
-.record-btn.recording .record-icon{border-radius:10px;width:50px;height:50px;}
+.listen-icon-btn .rec-stop{display:none;}
+.listen-icon-btn.recording{background:#c0392b;border-color:#c0392b;color:#fff;animation:recPulse 1.2s ease-in-out infinite;}
+.listen-icon-btn.recording .rec-mic{display:none;}
+.listen-icon-btn.recording .rec-stop{display:block;}
 .btn-row{display:flex;justify-content:flex-end;margin-top:1.25rem;gap:0.75rem;align-items:center;}
 
 .upload-zone{border:2px dashed var(--orange-rule);border-radius:var(--r-sm);padding:2.5rem 1.5rem;text-align:center;background:rgba(255,244,236,0.4);cursor:pointer;transition:border-color var(--transition),background var(--transition);}
@@ -131,8 +130,8 @@ textarea::placeholder{color:#b0a090;}
 .lang-sel{font-family:var(--mono);font-size:0.72rem;color:var(--accent);background:#fff;border:1.5px solid var(--rule);border-radius:var(--r-sm);padding:0.45em 0.75em;cursor:pointer;outline:none;}
 .lang-swap{font-size:0.9rem;color:var(--orange-mid);background:none;border:none;cursor:pointer;padding:0.2em 0.4em;border-radius:4px;transition:background var(--transition);}
 .lang-swap:hover{background:var(--orange-pale);}
-.translate-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:1rem;}
-#langSwap{align-self:center;justify-self:center;}
+.translate-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:1rem;align-items:start;}
+#langSwap{align-self:start;justify-self:center;margin-top:0.3rem;}
 .tr-box{border:1.5px solid var(--orange-rule);border-radius:var(--r-sm);overflow:hidden;background:#fff;display:flex;flex-direction:column;}
 .tr-title{font-family:var(--mono);font-size:0.78rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--orange-mid);padding:0.7rem 1rem;border-bottom:1.5px solid var(--orange-rule);text-align:center;background:#fff;}
 .tr-box textarea,.tr-box .translate-output{border:none;border-radius:0;background:#fff;}
@@ -350,8 +349,7 @@ button.action-btn.recording{background:var(--warn)!important;box-shadow:0 2px 10
           </button>
         </div>
       </div>
-      <div class="result-card" id="resultCard"><div class="card-label" id="resultLabel">Output</div><div id="resultBody"></div></div>
-      <section class="history-section" id="historySection" style="display:none"><h2 data-i18n="history.h2">Recent</h2><ul class="history-list" id="historyList"></ul></section>
+      <div class="result-card" id="resultCard" style="padding:0;overflow:hidden;border-color:var(--orange-rule);"><div class="tr-title" id="resultLabel">Output</div><div id="resultBody" style="padding:1.25rem 1.5rem;"></div></div>
     </div>
 
     <div class="tab-panel" id="tab-listen">
@@ -369,7 +367,7 @@ button.action-btn.recording{background:var(--warn)!important;box-shadow:0 2px 10
           <div style="width:1px;background:var(--orange-rule);flex-shrink:0;"></div>
           <div style="flex:1;display:flex;flex-direction:column;">
             <div class="ls-title" data-i18n="card.record">Record your Manx</div>
-            <div class="ls-body"><button class="record-btn" id="recordBtn" type="button" aria-label="Record"><span class="record-icon"></span></button><span id="recordStatus" style="font-family:var(--mono);font-size:0.67rem;color:#a09585;position:absolute;bottom:0.5rem;left:0;right:0;"></span></div>
+            <div class="ls-body"><button type="button" class="listen-icon-btn" id="recordBtn" aria-label="Record"><svg class="rec-mic" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="40" height="40" fill="currentColor"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zM17.91 11c-.49 0-.9.36-.98.85C16.52 14.2 14.47 16 12 16s-4.52-1.8-4.93-4.15c-.08-.49-.49-.85-.98-.85-.61 0-1.09.54-1 1.14.49 3 2.89 5.35 5.91 5.78V20c0 .55.45 1 1 1s1-.45 1-1v-2.08c3.02-.43 5.42-2.78 5.91-5.78.1-.6-.39-1.14-1-1.14z"/></svg><svg class="rec-stop" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="34" height="34" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2.5"/></svg></button><span id="recordStatus" style="font-family:var(--mono);font-size:0.67rem;color:#a09585;position:absolute;bottom:0.5rem;left:0;right:0;"></span></div>
           </div>
         </div>
 
@@ -397,7 +395,7 @@ button.action-btn.recording{background:var(--warn)!important;box-shadow:0 2px 10
 
       </div>
 
-      <div class="result-card" id="transcribeResult"><div class="card-label" data-i18n="lbl.transcription">Transcription</div><div id="transcribeBody"></div></div>
+      <div class="result-card" id="transcribeResult" style="padding:0;overflow:hidden;border-color:var(--orange-rule);"><div class="tr-title" data-i18n="lbl.transcription">Transcription</div><div id="transcribeBody" style="padding:1.25rem 1.5rem;"></div></div>
     </div>
 
     <div class="tab-panel" id="tab-translate">
@@ -406,7 +404,7 @@ button.action-btn.recording{background:var(--warn)!important;box-shadow:0 2px 10
                 <select id="srcLang" style="display:none"><option value="gv">Gaelg (Manx)</option><option value="en">English</option></select>
         <select id="tgtLang" style="display:none"><option value="en">English</option><option value="gv">Gaelg (Manx)</option></select>
         <div class="translate-grid">
-          <div class="tr-box"><div class="tr-title" id="srcDisplay">Manx</div><div style="position:relative;"><textarea id="translateInput" data-i18n-placeholder="placeholder.translate" placeholder="Enter text to translate…" maxlength="500" style="min-height:130px;background:#fff;border:none;padding-bottom:2.5rem;resize:none;"></textarea><button id="translateMicBtn" title="Record Manx speech" style="display:block;position:absolute;bottom:0.75rem;right:0.5rem;background:var(--orange-pale);border:1.5px solid var(--orange-rule);border-radius:6px;cursor:pointer;color:var(--orange-mid);padding:0.3em 0.4em;line-height:0;transition:background 0.18s,color 0.18s,border-color 0.18s;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zM17.91 11c-.49 0-.9.36-.98.85C16.52 14.2 14.47 16 12 16s-4.52-1.8-4.93-4.15c-.08-.49-.49-.85-.98-.85-.61 0-1.09.54-1 1.14.49 3 2.89 5.35 5.91 5.78V20c0 .55.45 1 1 1s1-.45 1-1v-2.08c3.02-.43 5.42-2.78 5.91-5.78.1-.6-.39-1.14-1-1.14z"/></svg></button></div><div class="char-count" id="translateCharCount">0 / 500</div></div>
+          <div><div class="tr-box"><div class="tr-title" id="srcDisplay">Manx</div><div style="position:relative;"><textarea id="translateInput" data-i18n-placeholder="placeholder.translate" placeholder="Enter text or record your voice to translate…" maxlength="500" style="min-height:130px;background:#fff;border:none;padding-bottom:2.5rem;resize:none;"></textarea><button id="translateMicBtn" title="Record Manx speech" style="display:block;position:absolute;bottom:0.75rem;right:0.5rem;background:var(--orange-pale);border:1.5px solid var(--orange-rule);border-radius:6px;cursor:pointer;color:var(--orange-mid);padding:0.3em 0.4em;line-height:0;transition:background 0.18s,color 0.18s,border-color 0.18s;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zM17.91 11c-.49 0-.9.36-.98.85C16.52 14.2 14.47 16 12 16s-4.52-1.8-4.93-4.15c-.08-.49-.49-.85-.98-.85-.61 0-1.09.54-1 1.14.49 3 2.89 5.35 5.91 5.78V20c0 .55.45 1 1 1s1-.45 1-1v-2.08c3.02-.43 5.42-2.78 5.91-5.78.1-.6-.39-1.14-1-1.14z"/></svg></button></div></div><div class="char-count" id="translateCharCount">0 / 500</div></div>
           <button class="lang-swap" id="langSwap">⇄</button>
           <div class="tr-box"><div class="tr-title" id="tgtDisplay">English</div><div style="position:relative;"><div class="translate-output" data-i18n="output.translate" id="translateOutput">Translation will appear here…</div><button id="translateSpeakBtn" title="Speak translation" style="display:none;position:absolute;bottom:0.5rem;right:0.5rem;background:var(--orange-pale);border:1.5px solid var(--orange-rule);border-radius:6px;cursor:pointer;color:var(--orange-mid);padding:0.3em 0.4em;line-height:0;transition:background 0.18s,color 0.18s,border-color 0.18s;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg></button></div></div>
         </div>
@@ -520,7 +518,7 @@ const T = {
     'lbl.transcription':  'Transcription',
     'card.source':        'Source text',
     'card.translation':   'Translation',
-    'placeholder.translate': 'Enter text to translate\u2026',
+    'placeholder.translate': 'Enter text or record your voice to translate\u2026',
     'output.translate':   'Translation will appear here\u2026',
     'btn.translate':      'Translate',
     'btn.translate.loading': 'Translating\u2026',
@@ -687,18 +685,16 @@ synthBtn.addEventListener('click', async () => {
       const res = await fetch(`${API_BASE}/synthesize`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({text, gender: selectedGender, speed})});
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || 'Synthesis failed.');
-      showAudio(data.audio_url, data.filename, text);
-      addHistory(text, data.audio_url, data.filename);
+      showAudio(data.audio_url, data.filename);
     } catch(err) { showError(err.message || 'An unexpected error occurred.'); }
   });
   setLoading(synthBtn, false);
 });
 
-function showAudio(url,filename,text) {
+function showAudio(url,filename) {
   resultCard.className='result-card visible'; resultCard.style.display=''; resultLabel.textContent=t('js.lbl.output');
   const audioUrl=`${API_BASE}${url}`;
   resultBody.innerHTML=`
-    <p style="font-family:var(--sans);font-size:1rem;font-weight:300;line-height:1.7;margin-bottom:1.25rem;">${escHtml(text)}</p>
     <div class="waveform-wrap" id="playerWrap">
       <button id="playPauseBtn" style="background:none;border:none;cursor:pointer;color:var(--orange-mid);font-size:1.3rem;flex-shrink:0;padding:0 0.25rem;" title="Play / Pause">▶</button>
       <span id="curTime" style="font-family:var(--mono);font-size:0.67rem;color:#a09585;min-width:3em;">0:00</span>
@@ -872,34 +868,7 @@ document.getElementById('transcribeBtn').addEventListener('click', async () => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || t('js.err.transcribe'));
       rc.className='result-card visible'; rc.style.display='';
-      const objUrl = URL.createObjectURL(asrFile);
-      rb.innerHTML=`
-        <div class="waveform-wrap" id="asrPlayerWrap" style="background:var(--orange-pale);border-color:var(--orange-rule);">
-          <button id="asrPlayBtn" style="background:none;border:none;cursor:pointer;color:var(--orange-mid);font-size:1.3rem;flex-shrink:0;padding:0 0.25rem;" title="Play / Pause">▶</button>
-          <span id="asrCurTime" style="font-family:var(--mono);font-size:0.67rem;color:#a09585;min-width:3em;">0:00</span>
-          <input id="asrSeekBar" type="range" min="0" max="100" value="0" step="0.1"
-            style="flex:1;accent-color:var(--orange-mid);cursor:pointer;height:4px;" />
-          <span id="asrDurTime" style="font-family:var(--mono);font-size:0.67rem;color:#a09585;min-width:3em;text-align:right;">—</span>
-        </div>
-        <p style="font-family:var(--sans);font-size:1rem;font-weight:300;line-height:1.7;margin-top:1.1rem;">${escHtml(data.transcript)}</p>
-        <div style="font-family:var(--mono);font-size:0.62rem;color:#a09585;margin-top:0.75rem;">${escHtml(asrFile.name)}</div>`;
-      const asrAudio = new Audio(objUrl);
-      const asrPlayBtn = document.getElementById('asrPlayBtn');
-      const asrSeekBar = document.getElementById('asrSeekBar');
-      const asrCur = document.getElementById('asrCurTime');
-      const asrDur = document.getElementById('asrDurTime');
-      function asrFmt(s) { return `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`; }
-      asrAudio.addEventListener('loadedmetadata', () => { asrDur.textContent = asrFmt(asrAudio.duration); });
-      asrAudio.addEventListener('timeupdate', () => {
-        asrCur.textContent = asrFmt(asrAudio.currentTime);
-        if (asrAudio.duration) asrSeekBar.value = (asrAudio.currentTime / asrAudio.duration) * 100;
-      });
-      asrAudio.addEventListener('ended', () => { asrPlayBtn.textContent = '▶'; asrSeekBar.value = 0; });
-      asrPlayBtn.addEventListener('click', () => {
-        if (asrAudio.paused) { asrAudio.play(); asrPlayBtn.textContent = '⏸'; }
-        else { asrAudio.pause(); asrPlayBtn.textContent = '▶'; }
-      });
-      asrSeekBar.addEventListener('input', () => { asrAudio.currentTime = (asrSeekBar.value / 100) * asrAudio.duration; });
+      rb.innerHTML=`<p style="font-family:var(--sans);font-size:1rem;font-weight:300;line-height:1.7;">${escHtml(data.transcript)}</p>`;
     } catch(err) {
       rc.className='result-card visible error'; rc.style.display='';
       rb.innerHTML=`<div class="error-msg">⚠ ${escHtml(err.message || t('js.err.transcribe'))}</div>`;
