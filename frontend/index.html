@@ -95,12 +95,14 @@ textarea:focus{border-color:var(--orange-mid);box-shadow:0 0 0 3px rgba(196,94,2
 textarea::placeholder{color:#b0a090;}
 .char-count{font-family:var(--mono);font-size:0.67rem;color:#b0a090;text-align:right;margin-top:0.4rem;}
 .char-count.warn{color:var(--warn);}
-.voice-label{font-family:var(--mono);font-size:0.63rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--orange-mid);margin-bottom:0.5rem;}
-.gender-toggle{display:flex;gap:0;margin-bottom:0.75rem;border:1.5px solid var(--orange-rule);border-radius:var(--r-sm);overflow:hidden;width:100%;}
-.gender-btn{font-family:var(--mono);font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;background:#fff;color:var(--orange-mid);border:none;padding:0.45em 1.25em;cursor:pointer;transition:background 0.15s,color 0.15s;flex:1;}
+.voice-select{border:1.5px solid var(--orange-rule);border-radius:var(--r-sm);overflow:hidden;margin-bottom:1rem;background:#fff;}
+.voice-label{font-family:var(--serif);font-size:1.6rem;line-height:1.1;color:var(--orange-mid);padding:0.75rem 1.1rem 0.65rem;background:linear-gradient(135deg,var(--orange-pale),#fff);border-bottom:1.5px solid var(--orange-rule);}
+.gender-toggle{display:flex;gap:0;width:100%;}
+.gender-btn{font-family:var(--mono);font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;background:#fff;color:var(--orange-mid);border:none;padding:0.7em 1.25em;cursor:pointer;transition:background 0.15s,color 0.15s;flex:1;display:inline-flex;align-items:center;justify-content:center;gap:0.45em;}
 .gender-btn:not(:last-child){border-right:1.5px solid var(--orange-rule);}
 .gender-btn.active{background:var(--orange-mid);color:#fff;}
 .gender-btn:not(.active):hover{background:var(--orange-pale);}
+.gender-sym{font-size:1.3em;line-height:1;}
 .btn-row{display:flex;justify-content:flex-end;margin-top:1.25rem;gap:0.75rem;align-items:center;}
 
 .upload-zone{border:2px dashed var(--orange-rule);border-radius:var(--r-sm);padding:2.5rem 1.5rem;text-align:center;background:rgba(255,244,236,0.4);cursor:pointer;transition:border-color var(--transition),background var(--transition);}
@@ -299,10 +301,12 @@ button.action-btn.recording{background:var(--warn)!important;box-shadow:0 2px 10
     <div class="tab-panel active" id="tab-speak">
       <div class="section-intro"><h2 data-i18n="sec.speak.h2">Text to Speech</h2><p data-i18n="sec.speak.p">Type or paste Manx text and listen to it spoken aloud.</p></div>
       <div class="card card-speak">
-        <div class="voice-label" data-i18n="card.voice">Choose a voice</div>
-        <div class="gender-toggle">
-          <button class="gender-btn active" id="genderFemale" data-gender="female">Female</button>
-          <button class="gender-btn" id="genderMale" data-gender="male">Male</button>
+        <div class="voice-select">
+          <div class="voice-label" data-i18n="card.voice">Choose a voice</div>
+          <div class="gender-toggle">
+            <button class="gender-btn active" id="genderFemale" data-gender="female"><span class="gender-sym">♀</span><span>Female</span></button>
+            <button class="gender-btn" id="genderMale" data-gender="male"><span class="gender-sym">♂</span><span>Male</span></button>
+          </div>
         </div>
         <textarea id="textInput" data-i18n-placeholder="placeholder.speak" placeholder="Enter Manx text to synthesise…" maxlength="500" spellcheck="true" autocomplete="off"></textarea>
         <div class="char-count" id="charCount">0 / 500</div>
@@ -380,8 +384,8 @@ button.action-btn.recording{background:var(--warn)!important;box-shadow:0 2px 10
           <span class="lang-display" id="tgtDisplay">English</span>
         </div>
         <div class="translate-grid">
-          <div><div class="card-label" data-i18n="card.source">Source text</div><div style="position:relative;"><textarea id="translateInput" data-i18n-placeholder="placeholder.translate" placeholder="Enter text to translate…" maxlength="500" style="min-height:130px;background:rgba(255,244,236,0.5);border-color:var(--orange-rule);padding-bottom:2.5rem;resize:none;"></textarea><button id="translateMicBtn" title="Record Manx speech" style="display:block;position:absolute;bottom:0.75rem;right:0.5rem;background:var(--orange-pale);border:1.5px solid var(--orange-rule);border-radius:6px;cursor:pointer;color:var(--orange-mid);padding:0.3em 0.4em;line-height:0;transition:background 0.18s,color 0.18s,border-color 0.18s;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zM17.91 11c-.49 0-.9.36-.98.85C16.52 14.2 14.47 16 12 16s-4.52-1.8-4.93-4.15c-.08-.49-.49-.85-.98-.85-.61 0-1.09.54-1 1.14.49 3 2.89 5.35 5.91 5.78V20c0 .55.45 1 1 1s1-.45 1-1v-2.08c3.02-.43 5.42-2.78 5.91-5.78.1-.6-.39-1.14-1-1.14z"/></svg></button></div><div class="char-count" id="translateCharCount">0 / 500</div></div>
-          <div><div class="card-label" data-i18n="card.translation">Translation</div><div style="position:relative;"><div class="translate-output" data-i18n="output.translate" id="translateOutput">Translation will appear here…</div><button id="translateSpeakBtn" title="Speak translation" style="display:none;position:absolute;bottom:0.5rem;right:0.5rem;background:var(--orange-pale);border:1.5px solid var(--orange-rule);border-radius:6px;cursor:pointer;color:var(--orange-mid);padding:0.3em 0.4em;line-height:0;transition:background 0.18s,color 0.18s,border-color 0.18s;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg></button></div></div>
+          <div><div style="position:relative;"><textarea id="translateInput" data-i18n-placeholder="placeholder.translate" placeholder="Enter text to translate…" maxlength="500" style="min-height:130px;background:rgba(255,244,236,0.5);border-color:var(--orange-rule);padding-bottom:2.5rem;resize:none;"></textarea><button id="translateMicBtn" title="Record Manx speech" style="display:block;position:absolute;bottom:0.75rem;right:0.5rem;background:var(--orange-pale);border:1.5px solid var(--orange-rule);border-radius:6px;cursor:pointer;color:var(--orange-mid);padding:0.3em 0.4em;line-height:0;transition:background 0.18s,color 0.18s,border-color 0.18s;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zM17.91 11c-.49 0-.9.36-.98.85C16.52 14.2 14.47 16 12 16s-4.52-1.8-4.93-4.15c-.08-.49-.49-.85-.98-.85-.61 0-1.09.54-1 1.14.49 3 2.89 5.35 5.91 5.78V20c0 .55.45 1 1 1s1-.45 1-1v-2.08c3.02-.43 5.42-2.78 5.91-5.78.1-.6-.39-1.14-1-1.14z"/></svg></button></div><div class="char-count" id="translateCharCount">0 / 500</div></div>
+          <div><div style="position:relative;"><div class="translate-output" data-i18n="output.translate" id="translateOutput">Translation will appear here…</div><button id="translateSpeakBtn" title="Speak translation" style="display:none;position:absolute;bottom:0.5rem;right:0.5rem;background:var(--orange-pale);border:1.5px solid var(--orange-rule);border-radius:6px;cursor:pointer;color:var(--orange-mid);padding:0.3em 0.4em;line-height:0;transition:background 0.18s,color 0.18s,border-color 0.18s;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg></button></div></div>
         </div>
         <div class="btn-row">
           <button class="action-btn btn-orange" id="translateBtn" type="button">
