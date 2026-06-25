@@ -999,24 +999,6 @@ async def _run_transcription(request, files, file, transcribe_fn, status_key):
                 tmp_path = tmp.name  # Set before read so finally can clean up on disconnect
                 tmp.write(await file.read())
 
-            # TEMP DEBUG: capture raw upload + format probe + normalised wav for iOS diagnosis
-            try:
-                import time, shutil
-                _dbg = "/exp/exp1/acp24csb/tmp/asr_debug"
-                os.makedirs(_dbg, exist_ok=True)
-                _ct = (file.content_type or "none").replace("/", "_").replace(";", "_")
-                _base = os.path.join(_dbg, f"{time.strftime('%H%M%S')}_{status_key}_{_ct}")
-                shutil.copy(tmp_path, _base + "_raw")
-                with open(_base + "_probe.txt", "w") as _pf:
-                    subprocess.run(["ffprobe", "-hide_banner", tmp_path],
-                                   stdout=_pf, stderr=subprocess.STDOUT, timeout=10)
-                subprocess.run(["ffmpeg", "-y", "-i", tmp_path, "-ar", "16000", "-ac", "1",
-                                "-sample_fmt", "s16", _base + "_norm.wav"],
-                               capture_output=True, timeout=20)
-                logger.info(f"ASR_DEBUG saved {_base}")
-            except Exception:
-                logger.exception("ASR_DEBUG capture failed")
-
             # Duration check via ffprobe (works on any format, before ffmpeg normalisation)
             try:
                 probe = subprocess.run(
