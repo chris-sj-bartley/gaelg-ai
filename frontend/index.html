@@ -271,7 +271,7 @@ button.action-btn.recording{background:var(--warn)!important;box-shadow:0 2px 10
     </a>
     <div class="lang-switch" role="group" aria-label="Language">
       <button class="lang-flag active" data-lang="en" title="English" onclick="setLang('en')"><img src="/static/UK.png" alt="English"></button>
-      <button class="lang-flag" data-lang="gv" title="Gaelg (coming soon)" disabled style="opacity:0.25;cursor:not-allowed;"><img src="/static/IOM.png" alt="Gaelg"></button>
+      <button class="lang-flag" data-lang="gv" title="Gaelg (Manx)" onclick="setLang('gv')"><img src="/static/IOM.png" alt="Gaelg"></button>
     </div>
   </div>
 </header>
@@ -585,51 +585,9 @@ const T = {
     'js.rec.nomic':       'Could not access microphone: ',
   },
   gv: {
-    'hero.h1':            'Greienyn AI son<br><em>Gaelg</em>',
-    'hero.p':             'Jannoo coraa, aithnys coraa, as çhyndaa — troggit dy choadey as y Ghaelg y niartaghey.',
-    'tab.home':           '⌂ Thie',
-    'tab.speak':          '🗣 Loayrt',
-    'tab.listen':         '👂 Clashtyn',
-    'tab.translate':      '🔄 Çhyndaa',
-    'tab.about':          '👤 Mychione',
-    'sec.speak.h2':       'Screeu gys Coraa',
-    'sec.speak.p':        'Cur stiagh screeuyn Gaelgagh as eaisht roo.',
-    'sec.listen.h2':      'Aithnys Coraa',
-    'sec.listen.p':       'Ard-laad faiyl kiaull ny record dy jeeragh, eisht screeu. Kyndagh rish lhimiteyryn çhiassaghey, cha vod clip ve ny s\'liurey na <strong>30 fillagyn</strong>. Son clareenyn ny projects ny s\'liurey, <a href="#" onclick="switchTab(\'about\');return false;" style="color:var(--orange-mid);text-decoration:underline;text-underline-offset:2px;">cur fys orrin</a>.',
-    'sec.translate.h2':   'Çhyndaa',
-    'sec.translate.p':    'Çhyndaa eddyr Gaelg as Baarle.',
-    'sec.about.h2':       'Mychione',
-    'card.speak':         'Cur stiagh screeuyn Gaelgagh',
-    'placeholder.speak':  "Enter Manx text to synthesise\u2026",
-    'btn.synth':          'Jannoo Coraa',
-    'btn.synth.loading':  'Jannoo Coraa\u2026',
-    'history.h2':         'Anmagh',
-    'card.upload':        'Ard-laad faiyl',
-    'btn.transcribe':     'Screeu',
-    'btn.transcribe.loading': 'Screeu\u2026',
-    'card.record':        'Record coraa',
-    'card.record.desc':   'Brish dy ghoaill recortys veih dty vicrophone',
-    'btn.record':         '\u23fa  Toshiaghey recortys',
-    'btn.record.loading': '\u23f9  Scuirr recortys',
-    'lbl.transcription':  'Screeudeyrys',
-    'card.source':        'Testyr bun',
-    'card.translation':   'Çhyndaa',
-    'placeholder.translate': 'Cur stiagh testyr dy çhyndaa\u2026',
-    'output.translate':   "Bee'n çhyndaa ry-akin ayns shoh\u2026",
-    'btn.translate':      'Çhyndaa',
-    'btn.translate.loading': 'Çhyndaa\u2026',
-    'footer':             '<strong>Gaelg AI</strong> &nbsp;&middot;&nbsp; Ollooscoill Sheffield &nbsp;&middot;&nbsp; Troggit lesh &hearts; son Gaelg &nbsp;&middot;&nbsp; <a href="/privacy.html" style="color:rgba(255,255,255,0.65);text-decoration:underline;text-underline-offset:2px;">Privacy Policy</a>',
-    'js.lbl.output':      'Cooish',
-    'js.lbl.error':       'Marraneys',
-    'js.download':        '\u2193 Nollick WAV',
-    'js.play':            '\u25b6 Cloie',
-    'js.err.empty':       'Cur stiagh texte hoshiaght.',
-    'js.err.transcribe':  'Cha dod eh screeu.',
-    'js.err.translate':   'Cha dod eh çhyndaa.',
-    'js.err.samelang':    'Ta\'n çhengey bun as yn çhengey kione yn un cheray.',
-    'js.rec.counting':    'Recortyssagh\u2026',
-    'js.rec.done':        'Recortys jeant.',
-    'js.rec.nomic':       'Cha dod eh roshtyn y microphone: ',
+    // Manx (Gaelg) translations: intentionally empty until verified, professional
+    // translations are added here. Until then every key falls back to English
+    // (see setLang / t()), so users never see incorrect machine-translated text.
   }
 };
 
@@ -638,22 +596,24 @@ function t(key) { return T[currentLang]?.[key] ?? T.en[key] ?? key; }
 function setLang(lang) {
   currentLang = lang;
   // innerHTML elements
+  // Any key missing in the target locale falls back to English, so users never
+  // see untranslated/incorrect Manx. (Only verified translations appear in T.gv.)
   document.querySelectorAll('[data-i18n]').forEach(el => {
-    const v = T[lang]?.[el.dataset.i18n];
+    const v = T[lang]?.[el.dataset.i18n] ?? T.en?.[el.dataset.i18n];
     if (v !== undefined) el.innerHTML = v;
   });
   // placeholder attributes
   document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
-    const v = T[lang]?.[el.dataset.i18nPlaceholder];
+    const v = T[lang]?.[el.dataset.i18nPlaceholder] ?? T.en?.[el.dataset.i18nPlaceholder];
     if (v !== undefined) el.placeholder = v;
   });
   // data-label / data-loading (CSS content: attr(...))
   document.querySelectorAll('[data-i18n-label]').forEach(el => {
-    const v = T[lang]?.[el.dataset.i18nLabel];
+    const v = T[lang]?.[el.dataset.i18nLabel] ?? T.en?.[el.dataset.i18nLabel];
     if (v !== undefined) el.dataset.label = v;
   });
   document.querySelectorAll('[data-i18n-loading]').forEach(el => {
-    const v = T[lang]?.[el.dataset.i18nLoading];
+    const v = T[lang]?.[el.dataset.i18nLoading] ?? T.en?.[el.dataset.i18nLoading];
     if (v !== undefined) el.dataset.loading = v;
   });
   document.querySelectorAll('.lang-flag').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
