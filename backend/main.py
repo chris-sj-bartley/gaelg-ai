@@ -477,7 +477,7 @@ def load_mt():
 # Inference helpers
 # ---------------------------------------------------------------------------
 
-def synthesize_text(text: str, output_path: str):
+def synthesize_text(text: str, output_path: str, speed: float = 1.0):
     if generator is None or vocoder is None:
         raise RuntimeError("TTS models not loaded")
     import torch
@@ -497,7 +497,7 @@ def synthesize_text(text: str, output_path: str):
             temperature=1.5,
             stoc=False,
             spk=None,
-            length_scale=1.0,
+            length_scale=1.0 / speed,  # smaller = faster; speed 1.0 = 100%
         )
         audio = (
             vocoder.forward(y_dec)
@@ -738,6 +738,7 @@ async def shutdown():
 class SynthesizeRequest(BaseModel):
     text: str
     gender: str = "male"  # "male" or "female" — both anonymised via mandatory kNN-VC (privacy protection)
+    speed: float = 1.0  # synthesis speed multiplier; 1.0 = 100%, clamped to 0.5–1.5 (50–150%)
     class Config:
         json_schema_extra = {"example": {"text": "Fastyr mie, kys t'ou?", "gender": "male"}}
 
@@ -806,6 +807,7 @@ async def synthesize(req: SynthesizeRequest, request: Request):
         raise HTTPException(status_code=400, detail="Text too long (max 500 chars).")
     if req.gender not in ("male", "female"):
         raise HTTPException(status_code=400, detail="gender must be 'male' or 'female'.")
+    speed = max(0.5, min(1.5, req.speed))  # clamp to supported 50–150% range
 
     filename    = f"{uuid.uuid4().hex}.wav"
     output_path = os.path.join(OUTPUT_DIR, filename)
@@ -822,7 +824,7 @@ async def synthesize(req: SynthesizeRequest, request: Request):
     async with tts_sem:
         try:
             await asyncio.wait_for(
-                loop.run_in_executor(None, synthesize_text, text, output_path),
+                loop.run_in_executor(None, synthesize_text, text, output_path, speed),
                 timeout=SYNTHESIZE_TIMEOUT_SECONDS
             )
         except asyncio.TimeoutError:
