@@ -197,6 +197,11 @@ a.dl-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent);}
 .about-greeting{font-family:var(--serif);font-size:1.9rem;color:var(--accent);line-height:1.1;}
 .about-bio{font-size:0.97rem;font-weight:300;line-height:1.85;color:#3a3028;}
 .about-list{font-size:0.97rem;font-weight:300;line-height:1.7;color:#3a3028;padding-left:1.25rem;margin:0.75rem 0 0;display:flex;flex-direction:column;gap:0.5rem;}
+#pubList{display:flex;flex-direction:column;gap:1rem;list-style:none;padding:0;margin:0.25rem 0 0;}
+.pub-item{font-size:0.95rem;font-weight:300;line-height:1.6;color:#3a3028;}
+.pub-item em{font-style:italic;}
+.pub-link{display:inline-block;margin-top:0.4rem;font-family:var(--mono);font-size:0.68rem;letter-spacing:0.05em;color:var(--orange-mid);text-decoration:none;border:1.5px solid var(--orange-rule);border-radius:20px;padding:0.3em 0.9em;transition:background var(--transition),color var(--transition),border-color var(--transition);}
+.pub-link:hover{background:var(--orange-mid);color:#fff;border-color:var(--orange-mid);}
 .about-contact-section{display:flex;flex-direction:column;gap:0.5rem;padding-top:1rem;border-top:1px solid var(--orange-rule);}
 .contact-label{font-family:var(--mono);font-size:0.6rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--orange-mid);margin-bottom:0.2rem;}
 .contact-pills{display:flex;flex-wrap:wrap;gap:0.6rem;}
@@ -488,6 +493,10 @@ button.action-btn.recording{background:var(--warn)!important;box-shadow:0 2px 10
           </div>
         </div>
       </div>
+      <div class="about-project">
+        <h3>Publications</h3>
+        <ul id="pubList"><li class="pub-item" style="color:#a09585;">Loading publications…</li></ul>
+      </div>
     </div>
 
   </main>
@@ -711,6 +720,68 @@ function routeFromHash() {
 // Back / forward moves between tabs; deep link / refresh opens the right tab
 window.addEventListener('hashchange', routeFromHash);
 routeFromHash();
+
+// ── Publications (rendered from a BibTeX file) ────────────────────────
+(function(){
+  const list = document.getElementById('pubList');
+  if(!list) return;
+  const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  function parseFields(s){
+    const f={}; let i=0;
+    while(i<s.length){
+      while(i<s.length && /[\s,]/.test(s[i])) i++;
+      let j=i; while(j<s.length && /[A-Za-z0-9_-]/.test(s[j])) j++;
+      if(j===i) break;
+      const name=s.slice(i,j).toLowerCase();
+      let k=j; while(k<s.length && s[k]!=='=') k++;
+      if(s[k]!=='=') break;
+      k++; while(k<s.length && /\s/.test(s[k])) k++;
+      let val='';
+      if(s[k]==='{'){ let d=0,m=k; for(;m<s.length;m++){ if(s[m]==='{')d++; else if(s[m]==='}'){d--; if(d===0)break;} } val=s.slice(k+1,m); i=m+1; }
+      else if(s[k]==='"'){ let m=k+1; while(m<s.length && s[m]!=='"') m++; val=s.slice(k+1,m); i=m+1; }
+      else { let m=k; while(m<s.length && !/[,\n]/.test(s[m])) m++; val=s.slice(k,m); i=m; }
+      f[name]=val.replace(/[{}]/g,'').replace(/\s+/g,' ').trim();
+    }
+    return f;
+  }
+  function parseBib(src){
+    const out=[]; let i=0;
+    while(i<src.length){
+      if(src[i]!=='@'){ i++; continue; }
+      let j=i+1; while(j<src.length && /[A-Za-z]/.test(src[j])) j++;
+      const type=src.slice(i+1,j).toLowerCase();
+      while(j<src.length && src[j]!=='{') j++;
+      if(src[j]!=='{'){ i=j+1; continue; }
+      let d=0,k=j,end=-1;
+      for(;k<src.length;k++){ if(src[k]==='{')d++; else if(src[k]==='}'){d--; if(d===0){end=k;break;}} }
+      if(end<0) break;
+      const body=src.slice(j+1,end);
+      const c=body.indexOf(',');
+      out.push({type, fields:parseFields(body.slice(c+1))});
+      i=end+1;
+    }
+    return out;
+  }
+  function fmt(e){
+    const f=e.fields;
+    const authors=(f.author||'').split(/\s+and\s+/).map(a=>a.trim()).filter(Boolean).map(esc).join(', ');
+    const year=f.year?` (${esc(f.year)})`:'';
+    const title=esc(f.title||'Untitled');
+    let venue='';
+    if(f.journal) venue=esc(f.journal);
+    else if(f.booktitle) venue=esc(f.booktitle);
+    else if((f.archiveprefix||'').toLowerCase()==='arxiv' && f.eprint) venue='arXiv:'+esc(f.eprint);
+    else if(f.publisher) venue=esc(f.publisher);
+    else if(f.howpublished) venue=esc(f.howpublished);
+    const url=f.url || (f.doi?('https://doi.org/'+f.doi):'');
+    const label=/arxiv/i.test(url)?'View on arXiv':(/doi\.org/i.test(url)?'DOI':'Read');
+    const link=url?`<a class="pub-link" href="${esc(url)}" target="_blank" rel="noopener">${label} ↗</a>`:'';
+    return `<li class="pub-item">${authors}${year}. <em>${title}</em>.${venue?' '+venue+'.':''}${link?'<br>'+link:''}</li>`;
+  }
+  fetch('/static/publications.bib').then(r=>{ if(!r.ok) throw 0; return r.text(); })
+    .then(src=>{ const e=parseBib(src); list.innerHTML = e.length ? e.map(fmt).join('') : '<li class="pub-item" style="color:#a09585;">No publications yet.</li>'; })
+    .catch(()=>{ list.innerHTML='<li class="pub-item" style="color:#a09585;">Publications could not be loaded.</li>'; });
+})();
 
 const textInput=document.getElementById('textInput'), charCount=document.getElementById('charCount');
 const synthBtn=document.getElementById('synthBtn'), resultCard=document.getElementById('resultCard');
