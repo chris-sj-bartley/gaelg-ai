@@ -55,6 +55,12 @@ body.at-home{overflow:hidden;}
 
 #splashNav{height:52px;flex-shrink:0;display:none;align-items:center;justify-content:center;gap:0;padding:0 1.5rem;border-top:1px solid rgba(255,255,255,0.12);}
 #splash.collapsed #splashNav{display:flex;}
+.nav-links{display:flex;align-items:center;}
+.hamburger{display:none;background:none;border:none;color:rgba(255,255,255,0.85);cursor:pointer;padding:0.4em;line-height:0;}
+.hamburger:hover{color:#fff;}
+.hamburger .ham-close{display:none;}
+#splash.nav-open .hamburger .ham-open{display:none;}
+#splash.nav-open .hamburger .ham-close{display:inline;}
 .splash-tab-btn{font-family:var(--mono);font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.68);background:none;border:none;border-bottom:4px solid transparent;height:52px;margin-bottom:-1px;padding:0 1.2em;cursor:pointer;transition:color 0.18s,border-color 0.18s;display:inline-flex;align-items:center;gap:0.4em;white-space:nowrap;}
 .splash-tab-btn:hover{color:#fff;}
 .splash-tab-btn.active{color:#fff;border-bottom-color:var(--orange-mid);}
@@ -218,6 +224,11 @@ button.action-btn.recording{background:var(--warn)!important;box-shadow:0 2px 10
   .hero-links{flex-direction:column;align-items:center;}
   .hero-link-btn{width:240px;}
   .splash-tab-btn{padding:0 0.7em;font-size:0.63rem;}
+  #splashNav{justify-content:space-between;padding:0 1rem;}
+  .hamburger{display:inline-flex;align-items:center;justify-content:center;}
+  .nav-links{display:none;position:fixed;top:116px;left:0;right:0;flex-direction:column;background:var(--accent);box-shadow:0 10px 24px rgba(0,0,0,0.35);border-top:1px solid rgba(255,255,255,0.12);z-index:95;}
+  #splash.nav-open .nav-links{display:flex;}
+  .nav-links .splash-tab-btn{height:auto;width:100%;justify-content:center;padding:1em 1.2em;margin-bottom:0;border-bottom:0;border-top:1px solid rgba(255,255,255,0.08);}
   .translate-grid{grid-template-columns:1fr;}
   .card{padding:1.5rem 1.25rem;}
   #splashHero{align-items:flex-start;}
@@ -291,10 +302,13 @@ button.action-btn.recording{background:var(--warn)!important;box-shadow:0 2px 10
   </div>
   <div id="splashNav">
     <button id="splashHomeBtn" class="splash-tab-btn" data-i18n="tab.home" onclick="goHome()">⌂ Home</button>
-    <button class="splash-tab-btn active" data-tab="speak" data-i18n="tab.speak" onclick="selectSplashTab('speak')">🗣 Speak</button>
-    <button class="splash-tab-btn" data-tab="listen" data-i18n="tab.listen" onclick="selectSplashTab('listen')">👂 Listen</button>
-    <button class="splash-tab-btn" data-tab="translate" data-i18n="tab.translate" onclick="selectSplashTab('translate')">🔄 Translate</button>
-    <button class="splash-tab-btn" data-tab="about" data-i18n="tab.about" onclick="selectSplashTab('about')">👤 About</button>
+    <div class="nav-links" id="navLinks">
+      <button class="splash-tab-btn active" data-tab="speak" data-i18n="tab.speak" onclick="selectSplashTab('speak')">🗣 Speak</button>
+      <button class="splash-tab-btn" data-tab="listen" data-i18n="tab.listen" onclick="selectSplashTab('listen')">👂 Listen</button>
+      <button class="splash-tab-btn" data-tab="translate" data-i18n="tab.translate" onclick="selectSplashTab('translate')">🔄 Translate</button>
+      <button class="splash-tab-btn" data-tab="about" data-i18n="tab.about" onclick="selectSplashTab('about')">👤 About</button>
+    </div>
+    <button class="hamburger" id="hamburgerBtn" onclick="toggleNav()" aria-label="Toggle menu" aria-expanded="false"><svg class="ham-open" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg><svg class="ham-close" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button>
   </div>
 </div>
 
@@ -648,6 +662,7 @@ const VALID_TABS = ['speak','listen','translate','about'];
 // UI only — no history change
 function showTab(name) {
   splash.classList.add('collapsed');
+  splash.classList.remove('nav-open');
   document.body.classList.remove('at-home');
   document.querySelectorAll('.splash-tab-btn[data-tab]').forEach(b=>b.classList.toggle('active', b.dataset.tab===name));
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('active', p.id==='tab-'+name));
@@ -655,8 +670,14 @@ function showTab(name) {
 }
 function showHome() {
   splash.classList.remove('collapsed');
+  splash.classList.remove('nav-open');
   document.body.classList.add('at-home');
   window.scrollTo(0,0);
+}
+function toggleNav() {
+  const open = splash.classList.toggle('nav-open');
+  const h = document.getElementById('hamburgerBtn');
+  if (h) h.setAttribute('aria-expanded', open);
 }
 
 // Navigation via the URL hash — robust in every context (no SecurityError, and no server
