@@ -229,7 +229,7 @@ button.action-btn.recording{background:var(--warn)!important;box-shadow:0 2px 10
 
 <header class="site-header">
   <div class="header-inner">
-    <a class="wordmark" href="#">
+    <a class="wordmark" href="/" onclick="goHome();return false;">
       <span class="wordmark-trisk"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
   <g transform="translate(50,50)" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
     <g transform="rotate(0)">
@@ -630,22 +630,42 @@ async function withSpin(fn) {
 
 const splash = document.getElementById('splash');
 
-function selectSplashTab(name) {
+const VALID_TABS = ['speak','listen','translate','about'];
+
+// UI only — no history change
+function showTab(name) {
   splash.classList.add('collapsed');
   document.body.classList.remove('at-home');
   document.querySelectorAll('.splash-tab-btn[data-tab]').forEach(b=>b.classList.toggle('active', b.dataset.tab===name));
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('active', p.id==='tab-'+name));
   window.scrollTo(0,0);
 }
-function goHome() {
+function showHome() {
   splash.classList.remove('collapsed');
   document.body.classList.add('at-home');
   window.scrollTo(0,0);
 }
+
+// Navigation — push a history entry and update the URL
+function selectSplashTab(name) {
+  if (location.pathname !== '/'+name) history.pushState({tab:name}, '', '/'+name);
+  showTab(name);
+}
+function goHome() {
+  if (location.pathname !== '/') history.pushState({}, '', '/');
+  showHome();
+}
 function switchTab(name) { selectSplashTab(name); }
 
-// Start in home state
-document.body.classList.add('at-home');
+// Resolve the current URL to a view (no history push)
+function routeFromPath() {
+  const seg = location.pathname.replace(/^\/+|\/+$/g,'').toLowerCase();
+  if (VALID_TABS.includes(seg)) showTab(seg); else showHome();
+}
+
+// Back / forward moves between tabs; deep link / refresh opens the right tab
+window.addEventListener('popstate', routeFromPath);
+routeFromPath();
 
 const textInput=document.getElementById('textInput'), charCount=document.getElementById('charCount');
 const synthBtn=document.getElementById('synthBtn'), resultCard=document.getElementById('resultCard');
