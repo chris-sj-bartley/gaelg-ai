@@ -646,26 +646,25 @@ function showHome() {
   window.scrollTo(0,0);
 }
 
-// Navigation — push a history entry and update the URL
+// Navigation via the URL hash — robust in every context (no SecurityError, and no server
+// rewrite needed: the hash is never sent to the server, so refresh / deep links just work).
 function selectSplashTab(name) {
-  try { if (location.pathname !== '/'+name) history.pushState({tab:name}, '', '/'+name); } catch(e) {}
-  showTab(name);
+  if (location.hash.slice(1) !== name) location.hash = name; else showTab(name);
 }
 function goHome() {
-  try { if (location.pathname !== '/') history.pushState({}, '', '/'); } catch(e) {}
-  showHome();
+  if (location.hash) location.hash = ''; else showHome();
 }
 function switchTab(name) { selectSplashTab(name); }
 
-// Resolve the current URL to a view (no history push)
-function routeFromPath() {
-  const seg = location.pathname.replace(/^\/+|\/+$/g,'').toLowerCase();
+// Resolve the current hash to a view
+function routeFromHash() {
+  const seg = decodeURIComponent(location.hash.replace(/^#\/?/,'')).toLowerCase();
   if (VALID_TABS.includes(seg)) showTab(seg); else showHome();
 }
 
 // Back / forward moves between tabs; deep link / refresh opens the right tab
-window.addEventListener('popstate', routeFromPath);
-routeFromPath();
+window.addEventListener('hashchange', routeFromHash);
+routeFromHash();
 
 const textInput=document.getElementById('textInput'), charCount=document.getElementById('charCount');
 const synthBtn=document.getElementById('synthBtn'), resultCard=document.getElementById('resultCard');
