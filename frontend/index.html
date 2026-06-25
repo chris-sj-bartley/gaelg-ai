@@ -537,6 +537,23 @@ button.action-btn.recording{background:var(--warn)!important;box-shadow:0 2px 10
 <script>
 const API_BASE='', MAX_CHARS=500;
 
+// Capture raw mic audio (iOS Safari's default noise-suppression/AGC distorts speech
+// for ASR) and use a mime type the browser actually supports (iOS records mp4, not webm).
+const AUDIO_CONSTRAINTS={audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}};
+function bestAudioMime(){
+  const cands=['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/mpeg'];
+  if(window.MediaRecorder && MediaRecorder.isTypeSupported){
+    for(const m of cands){ if(MediaRecorder.isTypeSupported(m)) return m; }
+  }
+  return '';
+}
+function newRecorder(stream){ const m=bestAudioMime(); return m ? new MediaRecorder(stream,{mimeType:m}) : new MediaRecorder(stream); }
+function recFile(rec, chunks){
+  const base=(rec.mimeType||'audio/webm').split(';')[0];
+  const ext=/mp4|m4a|aac/i.test(base)?'mp4':(/mpeg|mp3/i.test(base)?'mp3':(/ogg/i.test(base)?'ogg':'webm'));
+  return new File([new Blob(chunks,{type:base})], 'recording.'+ext, {type:base});
+}
+
 // ── i18n ──────────────────────────────────────────────────────────────
 let currentLang = 'en';
 
@@ -923,15 +940,14 @@ recordBtn.addEventListener('click', async () => {
     return;
   }
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const stream = await navigator.mediaDevices.getUserMedia(AUDIO_CONSTRAINTS);
     recordedChunks = [];
-    mediaRecorder = new MediaRecorder(stream);
+    mediaRecorder = newRecorder(stream);
     mediaRecorder.ondataavailable = e => { if (e.data.size > 0) recordedChunks.push(e.data); };
     mediaRecorder.onstop = () => {
       stream.getTracks().forEach(t => t.stop());
       setRecording(false);
-      const blob = new Blob(recordedChunks, { type: 'audio/webm' });
-      const f = new File([blob], 'recording.webm', { type: 'audio/webm' });
+      const f = recFile(mediaRecorder, recordedChunks);
       checkDurationAndSet(f, (ok) => {
         if (!ok) recordStatus.textContent = '';
       });
@@ -1057,9 +1073,9 @@ document.getElementById('translateSpeakBtn').addEventListener('click', async () 
   micBtn.addEventListener('click', async ()=>{
     if(tMicRecorder && tMicRecorder.state==='recording'){ tMicRecorder.stop(); return; }
     try {
-      const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+      const stream=await navigator.mediaDevices.getUserMedia(AUDIO_CONSTRAINTS);
       tMicChunks=[];
-      tMicRecorder=new MediaRecorder(stream);
+      tMicRecorder=newRecorder(stream);
       tMicRecorder.ondataavailable=e=>{if(e.data.size>0)tMicChunks.push(e.data);};
       tMicRecorder.onstop=async()=>{
         stream.getTracks().forEach(t=>t.stop());
@@ -1067,9 +1083,8 @@ document.getElementById('translateSpeakBtn').addEventListener('click', async () 
         micBtn.innerHTML=MIC_SVG;
         micBtn.disabled=true;
         try {
-          const blob=new Blob(tMicChunks,{type:'audio/webm'});
           const form=new FormData();
-          form.append('file',new File([blob],'recording.webm',{type:'audio/webm'}));
+          form.append('file',recFile(tMicRecorder,tMicChunks));
           const srcLang=document.getElementById('srcLang').value;
           const endpoint=srcLang==='gv'?'/transcribe':'/transcribe_en';
           const res=await fetch(`${API_BASE}${endpoint}`,{method:'POST',body:form});
