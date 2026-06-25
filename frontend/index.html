@@ -648,11 +648,11 @@ function showHome() {
 
 // Navigation — push a history entry and update the URL
 function selectSplashTab(name) {
-  if (location.pathname !== '/'+name) history.pushState({tab:name}, '', '/'+name);
+  try { if (location.pathname !== '/'+name) history.pushState({tab:name}, '', '/'+name); } catch(e) {}
   showTab(name);
 }
 function goHome() {
-  if (location.pathname !== '/') history.pushState({}, '', '/');
+  try { if (location.pathname !== '/') history.pushState({}, '', '/'); } catch(e) {}
   showHome();
 }
 function switchTab(name) { selectSplashTab(name); }
