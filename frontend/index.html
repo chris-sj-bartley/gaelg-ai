@@ -246,6 +246,11 @@ button.action-btn.recording{background:var(--warn)!important;box-shadow:0 2px 10
   .card{padding:1.5rem 1.25rem;}
   #splashHero{align-items:flex-start;}
   .splash-inner{padding-top:2rem;}
+  /* Stacked translate layout: lift the source char-counter out of flow (into the
+     textarea's reserved bottom strip, bottom-left opposite the mic) so the grid
+     gap above and below the ⇄ button is symmetric and it centres between boxes. */
+  .translate-grid > div:first-child{position:relative;}
+  .translate-grid #translateCharCount{position:absolute;left:0.85rem;bottom:0.65rem;margin:0;}
 }
 </style>
 </head>
@@ -353,7 +358,7 @@ button.action-btn.recording{background:var(--warn)!important;box-shadow:0 2px 10
   <main class="page-body">
 
     <div class="tab-panel active" id="tab-speak">
-      <div class="section-intro"><h2 data-i18n="sec.speak.h2">Text to Speech</h2><p data-i18n="sec.speak.p">Type or paste Manx text and listen to it spoken aloud. Due to compute constraints, text is limited to <strong>500 characters</strong>. For longer text or projects, <a href="#" onclick="switchTab('about');return false;" style="color:var(--orange-mid);text-decoration:underline;text-underline-offset:2px;">please get in touch</a>.</p></div>
+      <div class="section-intro"><h2 data-i18n="sec.speak.h2">Text to Speech</h2><p data-i18n="sec.speak.p">Type or paste Manx text and listen to it spoken aloud. Due to compute constraints, text is limited to <strong>500 characters</strong>.</p></div>
       <div class="card card-speak">
         <div class="voice-select">
           <div class="voice-label" data-i18n="card.voice">Choose a voice</div>
@@ -433,7 +438,7 @@ button.action-btn.recording{background:var(--warn)!important;box-shadow:0 2px 10
     </div>
 
     <div class="tab-panel" id="tab-translate">
-      <div class="section-intro"><h2 data-i18n="sec.translate.h2">Translation</h2><p data-i18n="sec.translate.p">Translate between Manx and English. Due to compute constraints, text is limited to <strong>500 characters</strong>. For longer text or projects, <a href="#" onclick="switchTab('about');return false;" style="color:var(--orange-mid);text-decoration:underline;text-underline-offset:2px;">please get in touch</a>.</p></div>
+      <div class="section-intro"><h2 data-i18n="sec.translate.h2">Translation</h2><p data-i18n="sec.translate.p">Translate between Manx and English. Due to compute constraints, text is limited to <strong>500 characters</strong>.</p></div>
       <div class="card card-translate">
                 <select id="srcLang" style="display:none"><option value="gv">Gaelg (Manx)</option><option value="en">English</option></select>
         <select id="tgtLang" style="display:none"><option value="en">English</option><option value="gv">Gaelg (Manx)</option></select>
@@ -484,6 +489,7 @@ button.action-btn.recording{background:var(--warn)!important;box-shadow:0 2px 10
       <div class="about-project">
         <h3>Future work</h3>
         <ul class="about-list">
+          <li>Translating this website into Manx (help needed).</li>
           <li>A Gaelg AI app.</li>
           <li>Improving the technologies (more natural voices, better recognition and translation).</li>
           <li>Collecting more Manx speech and text data to train on.</li>
@@ -496,7 +502,7 @@ button.action-btn.recording{background:var(--warn)!important;box-shadow:0 2px 10
         <ul class="about-list">
           <li>Provide data collections, or help run data collection campaigns.</li>
           <li>Share general feedback on the tools and their output.</li>
-          <li>Offer specialised help with particular applications, for example education or health.</li>
+          <li>Offer help with particular applications, for example education or health.</li>
         </ul>
         <div style="margin-top:1.25rem;"><a href="#" class="contact-pill" onclick="goToContact();return false;">✉ Get in touch</a></div>
       </div>
@@ -585,11 +591,11 @@ const T = {
     'tab.translate':      '🔄 Translate',
     'tab.about':          '👤 About',
     'sec.speak.h2':       'Text to Speech',
-    'sec.speak.p':        'Type or paste Manx text and listen to it spoken aloud. Due to compute constraints, text is limited to <strong>500 characters</strong>. For longer text or projects, <a href="#" onclick="switchTab(\'about\');return false;" style="color:var(--orange-mid);text-decoration:underline;text-underline-offset:2px;">please get in touch</a>.',
+    'sec.speak.p':        'Type or paste Manx text and listen to it spoken aloud. Due to compute constraints, text is limited to <strong>500 characters</strong>.',
     'sec.listen.h2':      'Automatic Speech Recognition',
     'sec.listen.p':       'Upload a Manx audio file or record directly, then transcribe. Due to compute constraints, clips must be <strong>30 seconds or under</strong>. For longer files or projects, <a href="#" onclick="switchTab(\'about\');return false;" style="color:var(--orange-mid);text-decoration:underline;text-underline-offset:2px;">please get in touch</a>.',
     'sec.translate.h2':   'Translation',
-    'sec.translate.p':    'Translate between Manx and English. Due to compute constraints, text is limited to <strong>500 characters</strong>. For longer text or projects, <a href="#" onclick="switchTab(\'about\');return false;" style="color:var(--orange-mid);text-decoration:underline;text-underline-offset:2px;">please get in touch</a>.',
+    'sec.translate.p':    'Translate between Manx and English. Due to compute constraints, text is limited to <strong>500 characters</strong>.',
     'sec.about.h2':       'About',
     'card.speak':         'Enter Manx text',
     'card.voice':         'Choose a voice',
