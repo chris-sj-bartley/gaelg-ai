@@ -601,7 +601,13 @@ def transcribe_audio(audio_path: str) -> str:
     features = inputs.input_features.to(WHISPER_DEVICE).half()
 
     with torch.no_grad():
-        ids = whisper_model.generate(features, num_beams=4, max_new_tokens=444)
+        ids = whisper_model.generate(
+            features,
+            num_beams=4,
+            max_new_tokens=444,
+            no_repeat_ngram_size=3,   # break the repetition loops Whisper falls into
+            repetition_penalty=1.1,   # on quiet / non-speech / hard audio (hallucination)
+        )
 
     transcript = whisper_processor.tokenizer.decode(ids[0], skip_special_tokens=True).strip()
     logger.info(f"Transcribed: '{transcript[:60]}'")
@@ -629,7 +635,13 @@ def transcribe_audio_en(audio_path: str) -> str:
         features = features.half()
 
     with torch.no_grad():
-        ids = whisper_en_model.generate(features, num_beams=4, max_new_tokens=444)
+        ids = whisper_en_model.generate(
+            features,
+            num_beams=4,
+            max_new_tokens=444,
+            no_repeat_ngram_size=3,   # break the repetition loops Whisper falls into
+            repetition_penalty=1.1,   # on quiet / non-speech / hard audio (hallucination)
+        )
 
     transcript = whisper_en_processor.tokenizer.decode(ids[0], skip_special_tokens=True).strip()
     logger.info(f"Transcribed (EN): '{transcript[:60]}'")
