@@ -203,6 +203,8 @@ audio{width:100%;accent-color:var(--accent);margin-top:0.75rem;}
 .audio-meta{font-family:var(--mono);font-size:0.67rem;color:#a09585;}
 a.dl-btn{font-family:var(--mono);font-size:0.67rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--orange-mid);border:1.5px solid var(--orange-mid);border-radius:20px;padding:0.4em 1.1em;text-decoration:none;transition:background var(--transition),color var(--transition);}
 a.dl-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent);}
+a.fb-link{font-family:var(--mono);font-size:0.65rem;letter-spacing:0.05em;color:#a09585;text-decoration:underline;text-underline-offset:2px;transition:color var(--transition);}
+a.fb-link:hover{color:var(--orange-mid);}
 
 .history-section{background:rgba(245,240,232,0.88);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid rgba(212,203,191,0.5);border-radius:var(--r);padding:1.25rem 1.5rem;}
 .history-section h2{font-family:var(--mono);font-size:0.63rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent-mid);margin-bottom:0.9rem;display:flex;align-items:center;gap:0.5rem;}
@@ -684,6 +686,7 @@ const T = {
     'js.lbl.output':      'Synthesised Voice',
     'js.lbl.error':       'Error',
     'js.download':        '\u2193 Download WAV',
+    'js.feedback.link':   '\u270e Provide feedback',
     'js.play':            '\u25b6 Play',
     'js.err.empty':       'Please enter some text first.',
     'js.err.transcribe':  'Transcription failed.',
@@ -958,7 +961,10 @@ function showAudio(url,filename) {
     </div>
     <div class="audio-actions">
       <span class="audio-meta">${escHtml(filename)}</span>
-      <a class="dl-btn" href="${audioUrl}" download="${escHtml(filename)}">${t('js.download')}</a>
+      <span style="display:inline-flex;align-items:center;gap:1rem;">
+        <a class="fb-link" href="#feedback" onclick="goToFeedback('Speak (text-to-speech)');return false;">${t('js.feedback.link')}</a>
+        <a class="dl-btn" href="${audioUrl}" download="${escHtml(filename)}">${t('js.download')}</a>
+      </span>
     </div>`;
   const audio = new Audio(audioUrl);
   const playBtn = document.getElementById('playPauseBtn');
@@ -1134,7 +1140,7 @@ document.getElementById('transcribeBtn').addEventListener('click', async () => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || t('js.err.transcribe'));
       rc.className='result-card visible'; rc.style.display='';
-      rb.innerHTML=`<button type="button" id="copyTranscript" class="copy-btn" title="Copy text"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg></button><p style="font-family:var(--sans);font-size:1rem;font-weight:300;line-height:1.7;padding-right:1.8rem;">${escHtml(data.transcript)}</p>`;
+      rb.innerHTML=`<button type="button" id="copyTranscript" class="copy-btn" title="Copy text"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg></button><p style="font-family:var(--sans);font-size:1rem;font-weight:300;line-height:1.7;padding-right:1.8rem;">${escHtml(data.transcript)}</p><div style="margin-top:0.9rem;text-align:right;"><a class="fb-link" href="#feedback" onclick="goToFeedback('Listen (speech recognition)');return false;">${t('js.feedback.link')}</a></div>`;
       const copyBtn=document.getElementById('copyTranscript');
       copyBtn.addEventListener('click',()=>{ navigator.clipboard.writeText(data.transcript).then(()=>{ copyBtn.classList.add('copied'); setTimeout(()=>copyBtn.classList.remove('copied'),1200); }).catch(()=>{}); });
       revealResult(rc);
