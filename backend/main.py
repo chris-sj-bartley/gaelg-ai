@@ -1116,3 +1116,79 @@ async def translate(req: TranslateRequest, request: Request):
         raise HTTPException(status_code=500, detail=f"Translation error: {e}")
 
 
+
+
+# ---------------------------------------------------------------------------
+# Feedback — anonymous form relayed by email
+# ---------------------------------------------------------------------------
+
+FEEDBACK_TO = os.environ.get("FEEDBACK_TO", "csjbartley1@sheffield.ac.uk")
+FEEDBACK_FROM = os.environ.get("FEEDBACK_FROM", "Gaelg AI <csjbartley1@sheffield.ac.uk>")
+FEEDBACK_SMTP_HOST = os.environ.get("FEEDBACK_SMTP_HOST", "mailhost.shef.ac.uk")
+FEEDBACK_SMTP_PORT = int(os.environ.get("FEEDBACK_SMTP_PORT", "25"))
+FEEDBACK_MAX_CHARS = 4000
+FEEDBACK_TIMEOUT_SECONDS = 25
+
+
+class FeedbackRequest(BaseModel):
+    message: str
+    topic: Optional[str] = None
+    website: Optional[str] = None  # honeypot — real users never fill this
+
+
+def send_feedback_email(topic: str, message: str):
+    import smtplib
+    from email.message import EmailMessage
+
+    msg = EmailMessage()
+    msg["Subject"] = f"[Gaelg AI feedback] {topic}"
+    msg["From"] = FEEDBACK_FROM
+    msg["To"] = FEEDBACK_TO
+    # Deliberately no IP / user agent: the form is anonymous.
+    msg.set_content(
+        "Anonymous feedback submitted on the Gaelg AI website.\n\n"
+        f"Topic: {topic}\n"
+        f"Submitted: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+        f"{message}\n"
+    )
+    with smtplib.SMTP(FEEDBACK_SMTP_HOST, FEEDBACK_SMTP_PORT, timeout=20) as s:
+        s.send_message(msg)
+
+
+@app.post("/feedback")
+async def feedback(req: FeedbackRequest, request: Request):
+    ip = request.client.host if request.client else "unknown"
+    allowed, retry_after = check_rate_limit(ip)
+    if not allowed:
+        raise HTTPException(
+            status_code=429,
+            detail=f"Rate limit exceeded. Try again in {retry_after}s.",
+            headers={"Retry-After": str(retry_after)},
+        )
+
+    # Honeypot filled -> almost certainly a bot; pretend success, send nothing.
+    if req.website:
+        return {"ok": True}
+
+    message = req.message.strip()
+    if not message:
+        raise HTTPException(status_code=400, detail="Empty feedback message.")
+    if len(message) > FEEDBACK_MAX_CHARS:
+        raise HTTPException(status_code=400, detail=f"Feedback too long (max {FEEDBACK_MAX_CHARS} chars).")
+
+    # Single header line, no CR/LF (header-injection guard), sensible length.
+    topic = " ".join((req.topic or "General").split())[:80] or "General"
+
+    loop = asyncio.get_running_loop()
+    try:
+        await asyncio.wait_for(
+            loop.run_in_executor(None, send_feedback_email, topic, message),
+            timeout=FEEDBACK_TIMEOUT_SECONDS,
+        )
+        return {"ok": True}
+    except asyncio.TimeoutError:
+        logger.exception("Feedback email timeout")
+        raise HTTPException(status_code=504, detail="Could not send feedback right now — please try again later.")
+    except Exception as e:
+        logger.exception("Feedback email failed")
+        raise HTTPException(status_code=500, detail="Could not send feedback right now — please try again later.")

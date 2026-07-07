@@ -112,6 +112,7 @@ body.at-home{overflow:hidden;}
 .card-speak{background:linear-gradient(135deg,var(--orange-pale) 0%,#fff 60%);border-color:var(--orange-rule);}
 .card-listen{background:linear-gradient(135deg,var(--orange-pale) 0%,#fff 60%);border-color:var(--orange-rule);}
 .card-translate{background:linear-gradient(135deg,var(--orange-pale) 0%,#fff 60%);border-color:var(--orange-rule);}
+.card-feedback{background:linear-gradient(135deg,var(--orange-pale) 0%,#fff 60%);border-color:var(--orange-rule);}
 .card-label{font-family:var(--mono);font-size:0.63rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--orange-mid);margin-bottom:0.9rem;display:flex;align-items:center;gap:0.5rem;}
 .card-label::after{content:'';flex:1;height:1px;background:var(--orange-rule);}
 .card-listen .card-label{color:var(--orange-mid);}.card-listen .card-label::after{background:var(--orange-rule);}
@@ -345,6 +346,7 @@ button.action-btn.recording{background:var(--warn)!important;box-shadow:0 2px 10
       <button class="splash-tab-btn" data-tab="listen" data-i18n="tab.listen" onclick="selectSplashTab('listen')">👂 Listen</button>
       <button class="splash-tab-btn" data-tab="translate" data-i18n="tab.translate" onclick="selectSplashTab('translate')">🔄 Translate</button>
       <button class="splash-tab-btn" data-tab="about" data-i18n="tab.about" onclick="selectSplashTab('about')">👤 About</button>
+      <button class="splash-tab-btn" data-tab="feedback" data-i18n="tab.feedback" onclick="selectSplashTab('feedback')">💬 Feedback</button>
     </div>
     <button class="hamburger" id="hamburgerBtn" onclick="toggleNav()" aria-label="Toggle menu" aria-expanded="false"><svg class="ham-open" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg><svg class="ham-close" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button>
   </div>
@@ -548,6 +550,35 @@ button.action-btn.recording{background:var(--warn)!important;box-shadow:0 2px 10
       </div>
     </div>
 
+    <div class="tab-panel" id="tab-feedback">
+      <div class="section-intro"><h2 data-i18n="sec.feedback.h2">Feedback</h2><p data-i18n="sec.feedback.p">Tell me what works, what doesn't, or what you'd like to see next. The form is <strong>completely anonymous</strong> — nothing about you is sent unless you write it in the message.</p></div>
+      <div class="card card-feedback">
+        <div class="voice-select">
+          <div class="voice-label" data-i18n="lbl.feedback.topic">Topic</div>
+          <div class="voice-row">
+            <select id="feedbackTopic" style="flex:1;border:none;background:#fff;font-family:var(--mono);font-size:0.78rem;color:var(--orange-mid);padding:0.7rem 1rem;outline:none;cursor:pointer;">
+              <option value="General">General</option>
+              <option value="Speak (text-to-speech)">Speak — text to speech</option>
+              <option value="Listen (speech recognition)">Listen — speech recognition</option>
+              <option value="Translate">Translate</option>
+              <option value="Website">Website</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+        <textarea id="feedbackInput" data-i18n-placeholder="placeholder.feedback" placeholder="Write your feedback here…" maxlength="4000" spellcheck="true" autocomplete="off" style="min-height:170px;"></textarea>
+        <input type="text" id="feedbackWebsite" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;height:1px;width:1px;opacity:0;">
+        <div class="char-count" id="feedbackCharCount">0 / 4000</div>
+        <div class="btn-row">
+          <button class="action-btn btn-orange" id="feedbackBtn" type="button">
+            <span class="spinner"></span>
+            <span class="btn-label" data-i18n-label="btn.feedback" data-i18n-loading="btn.feedback.loading" data-label="Send feedback" data-loading="Sending…"></span>
+          </button>
+        </div>
+      </div>
+      <div class="result-card" id="feedbackResult" tabindex="-1" style="border-color:var(--orange-rule);"><div id="feedbackResultBody"></div></div>
+    </div>
+
   </main>
 
   <div class="flank"><div class="flank-inner"><div class="flank-trisk" id="triskRight"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
@@ -609,6 +640,16 @@ const T = {
     'tab.listen':         '👂 Listen',
     'tab.translate':      '🔄 Translate',
     'tab.about':          '👤 About',
+    'tab.feedback':       '💬 Feedback',
+    'sec.feedback.h2':    'Feedback',
+    'sec.feedback.p':     "Tell me what works, what doesn't, or what you'd like to see next. The form is <strong>completely anonymous</strong> — nothing about you is sent unless you write it in the message.",
+    'lbl.feedback.topic': 'Topic',
+    'placeholder.feedback': 'Write your feedback here…',
+    'btn.feedback':       'Send feedback',
+    'btn.feedback.loading': 'Sending…',
+    'js.feedback.empty':  'Please write a message first.',
+    'js.feedback.sent':   'Gura mie ayd — thank you! Your feedback has been sent.',
+    'js.feedback.fail':   'Could not send feedback. Please try again later.',
     'sec.speak.h2':       'Text to Speech',
     'sec.speak.p':        'Type or paste Manx text and listen to it spoken aloud. Due to compute constraints, text is limited to <strong>500 characters</strong>.',
     'sec.listen.h2':      'Automatic Speech Recognition',
@@ -702,7 +743,7 @@ async function withSpin(fn) {
 
 const splash = document.getElementById('splash');
 
-const VALID_TABS = ['speak','listen','translate','about'];
+const VALID_TABS = ['speak','listen','translate','about','feedback'];
 
 // UI only — no history change
 function showTab(name) {
@@ -1206,6 +1247,36 @@ document.getElementById('translateSpeakBtn').addEventListener('click', async () 
       micBtn.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M6 6h12v12H6z"/></svg>';
       setTimeout(()=>{ if(tMicRecorder&&tMicRecorder.state==='recording') tMicRecorder.stop(); },30000);
     } catch(err){ micBtn.classList.remove('recording'); micBtn.innerHTML=MIC_SVG; }
+  });
+})();
+
+// ── Feedback form ─────────────────────────────────────────────────────
+function goToFeedback(topic) {
+  selectSplashTab('feedback');
+  if (topic) { const s=document.getElementById('feedbackTopic'); if (s) s.value=topic; }
+}
+(function(){
+  const input=document.getElementById('feedbackInput'), count=document.getElementById('feedbackCharCount');
+  const btn=document.getElementById('feedbackBtn'), rc=document.getElementById('feedbackResult'), rb=document.getElementById('feedbackResultBody');
+  input.addEventListener('input',()=>{ count.textContent=`${input.value.length} / 4000`; count.classList.toggle('warn',input.value.length>3600); });
+  btn.addEventListener('click', async ()=>{
+    const message=input.value.trim();
+    if(!message){ rc.className='result-card visible error'; rc.style.display=''; rb.innerHTML=`<div class="error-msg">⚠ ${t('js.feedback.empty')}</div>`; revealResult(rc); return; }
+    setLoading(btn,true);
+    rc.className='result-card'; rc.style.display='none';
+    try {
+      const res=await fetch(`${API_BASE}/feedback`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message, topic:document.getElementById('feedbackTopic').value, website:document.getElementById('feedbackWebsite').value})});
+      const data=await res.json();
+      if(!res.ok) throw new Error(data.detail||t('js.feedback.fail'));
+      input.value=''; count.textContent='0 / 4000'; count.classList.remove('warn');
+      rc.className='result-card visible'; rc.style.display='';
+      rb.innerHTML=`<p style="font-size:0.97rem;font-weight:300;line-height:1.7;">✅ ${t('js.feedback.sent')}</p>`;
+    } catch(err) {
+      rc.className='result-card visible error'; rc.style.display='';
+      rb.innerHTML=`<div class="error-msg">⚠ ${escHtml(err.message||t('js.feedback.fail'))}</div>`;
+    }
+    setLoading(btn,false);
+    revealResult(rc);
   });
 })();
 
