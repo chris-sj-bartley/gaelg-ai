@@ -185,6 +185,7 @@ button.action-btn:not(.loading) .btn-label::before{content:attr(data-label)!impo
 
 .result-card{background:#fff;border:1.5px solid var(--rule);border-radius:var(--r);padding:1.75rem 2rem;box-shadow:0 2px 16px rgba(0,0,0,0.05);display:none;animation:fadeUp 0.35s ease both;}
 .result-card.visible{display:block;}
+.result-card:focus{outline:none;}
 .result-card.error{border-color:#d4a0a0;background:#fff5f5;}
 .error-msg{font-size:0.9rem;color:var(--warn);display:flex;align-items:center;gap:0.5em;}
 .coming-soon-note{text-align:center;padding:1.5rem 1rem;}
@@ -405,7 +406,7 @@ button.action-btn.recording{background:var(--warn)!important;box-shadow:0 2px 10
           </button>
         </div>
       </div>
-      <div class="result-card" id="resultCard" style="padding:0;overflow:hidden;border-color:var(--orange-rule);"><div class="tr-title" id="resultLabel">Synthesised Voice</div><div id="resultBody" style="padding:1.25rem 1.5rem;"></div></div>
+      <div class="result-card" id="resultCard" tabindex="-1" style="padding:0;overflow:hidden;border-color:var(--orange-rule);"><div class="tr-title" id="resultLabel">Synthesised Voice</div><div id="resultBody" style="padding:1.25rem 1.5rem;"></div></div>
     </div>
 
     <div class="tab-panel" id="tab-listen">
@@ -451,7 +452,7 @@ button.action-btn.recording{background:var(--warn)!important;box-shadow:0 2px 10
 
       </div>
 
-      <div class="result-card" id="transcribeResult" style="padding:0;overflow:hidden;border-color:var(--orange-rule);"><div class="tr-title" data-i18n="lbl.transcription">Transcription</div><div id="transcribeBody" style="padding:1.25rem 1.5rem;position:relative;"></div></div>
+      <div class="result-card" id="transcribeResult" tabindex="-1" style="padding:0;overflow:hidden;border-color:var(--orange-rule);"><div class="tr-title" data-i18n="lbl.transcription">Transcription</div><div id="transcribeBody" style="padding:1.25rem 1.5rem;position:relative;"></div></div>
     </div>
 
     <div class="tab-panel" id="tab-translate">
@@ -889,9 +890,20 @@ function showAudio(url,filename) {
     else { audio.pause(); playBtn.textContent = '▶'; }
   });
   seekBar.addEventListener('input', () => { audio.currentTime = (seekBar.value / 100) * audio.duration; });
+  revealResult(resultCard);
 }
 function hideResult() { resultCard.className='result-card'; resultCard.style.display='none'; }
-function showError(msg) { resultCard.className='result-card visible error'; resultCard.style.display=''; resultLabel.textContent=t('js.lbl.error'); resultBody.innerHTML=`<div class="error-msg">⚠ ${msg}</div>`; }
+function showError(msg) { resultCard.className='result-card visible error'; resultCard.style.display=''; resultLabel.textContent=t('js.lbl.error'); resultBody.innerHTML=`<div class="error-msg">⚠ ${msg}</div>`; revealResult(resultCard); }
+
+// On short/wide viewports the result card renders below the fold and users miss
+// it — bring it into view and move focus there whenever output (or an error) lands.
+function revealResult(el) {
+  if (!el) return;
+  requestAnimationFrame(() => {
+    el.scrollIntoView({behavior:'smooth', block:'nearest'});
+    try { el.focus({preventScroll:true}); } catch(e) {}
+  });
+}
 function flashErr(msg) { showError(msg); resultCard.style.display='block'; }
 
 const history=[];
@@ -921,6 +933,7 @@ function checkDurationAndSet(f, cb) {
       const rc = document.getElementById('transcribeResult'), rb = document.getElementById('transcribeBody');
       rc.className='result-card visible error'; rc.style.display='';
       rb.innerHTML='<div class="error-msg">⚠ Audio cannot be longer than 30 seconds (this file is ' + Math.round(tmp.duration) + 's).</div>';
+      revealResult(rc);
       clearAsrFile();
       if (cb) cb(false);
     } else {
@@ -1021,6 +1034,7 @@ document.getElementById('transcribeBtn').addEventListener('click', async () => {
   if (!asrFile) {
     rc.className='result-card visible error';
     rb.innerHTML=`<div class="error-msg">⚠ Please select or record an audio file first.</div>`;
+    revealResult(rc);
     return;
   }
   setLoading(document.getElementById('transcribeBtn'), true);
@@ -1036,9 +1050,11 @@ document.getElementById('transcribeBtn').addEventListener('click', async () => {
       rb.innerHTML=`<button type="button" id="copyTranscript" class="copy-btn" title="Copy text"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg></button><p style="font-family:var(--sans);font-size:1rem;font-weight:300;line-height:1.7;padding-right:1.8rem;">${escHtml(data.transcript)}</p>`;
       const copyBtn=document.getElementById('copyTranscript');
       copyBtn.addEventListener('click',()=>{ navigator.clipboard.writeText(data.transcript).then(()=>{ copyBtn.classList.add('copied'); setTimeout(()=>copyBtn.classList.remove('copied'),1200); }).catch(()=>{}); });
+      revealResult(rc);
     } catch(err) {
       rc.className='result-card visible error'; rc.style.display='';
       rb.innerHTML=`<div class="error-msg">⚠ ${escHtml(err.message || t('js.err.transcribe'))}</div>`;
+      revealResult(rc);
     }
   });
   setLoading(document.getElementById('transcribeBtn'), false);
