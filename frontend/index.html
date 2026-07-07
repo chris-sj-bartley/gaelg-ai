@@ -715,8 +715,52 @@ function showHome() {
   splash.classList.remove('collapsed');
   splash.classList.remove('nav-open');
   document.body.classList.add('at-home');
+  // Home scrolls onto About: the About panel is the content that sits beneath
+  // the hero, so it is already in place when the hero slides away.
+  document.querySelectorAll('.splash-tab-btn[data-tab]').forEach(b=>b.classList.toggle('active', b.dataset.tab==='about'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('active', p.id==='tab-about'));
   window.scrollTo(0,0);
 }
+
+// ── Home ⇄ About scroll transition ────────────────────────────────────
+// Scrolling down on the hero slides it up onto the About content (About is
+// effectively the home page below the hero); scrolling up from the very top
+// of that content slides the hero back down. Tab navigation (#hash) is
+// untouched — this only applies while the URL has no hash.
+let heroToggleAt = 0;
+function heroDebounced() { return Date.now() - heroToggleAt > 600; }
+function heroShown() { return document.body.classList.contains('at-home'); }
+function homeShowsAbout() { return !location.hash && splash.classList.contains('collapsed'); }
+function heroAtBottom() { return splash.scrollTop + splash.clientHeight >= splash.scrollHeight - 2; }
+function collapseHeroToAbout() {
+  heroToggleAt = Date.now();
+  splash.classList.add('collapsed');
+  splash.classList.remove('nav-open');
+  document.body.classList.remove('at-home');
+  window.scrollTo(0,0);
+}
+function expandHero() { heroToggleAt = Date.now(); showHome(); }
+
+splash.addEventListener('wheel', e => {
+  if (heroShown() && e.deltaY > 0 && heroAtBottom() && heroDebounced()) { e.preventDefault(); collapseHeroToAbout(); }
+}, {passive:false});
+window.addEventListener('wheel', e => {
+  if (homeShowsAbout() && e.deltaY < 0 && window.scrollY === 0 && heroDebounced()) expandHero();
+});
+let heroTouchY = null;
+splash.addEventListener('touchstart', e => { heroTouchY = e.touches[0].clientY; }, {passive:true});
+splash.addEventListener('touchmove', e => {
+  if (heroTouchY === null || !heroShown()) return;
+  const dy = heroTouchY - e.touches[0].clientY;   // >0 = finger moving up = scrolling down
+  if (dy > 50 && heroAtBottom() && heroDebounced()) { heroTouchY = null; collapseHeroToAbout(); }
+}, {passive:true});
+let pageTouchY = null;
+window.addEventListener('touchstart', e => { pageTouchY = e.touches[0].clientY; }, {passive:true});
+window.addEventListener('touchmove', e => {
+  if (pageTouchY === null || heroShown()) return;
+  const dy = e.touches[0].clientY - pageTouchY;   // >0 = finger moving down = scrolling up
+  if (dy > 60 && homeShowsAbout() && window.scrollY === 0 && heroDebounced()) { pageTouchY = null; expandHero(); }
+}, {passive:true});
 function toggleNav() {
   const open = splash.classList.toggle('nav-open');
   const h = document.getElementById('hamburgerBtn');
