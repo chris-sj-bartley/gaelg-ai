@@ -4,7 +4,10 @@ BASE="${1:?usage: smoke.sh <base-url> [curl-extra-args]}"
 shift
 EXTRA=("$@")   # e.g. -u user:pass for staging basic-auth
 
-curl -fsS "${EXTRA[@]}" "$BASE/" | grep -qi "manx" || { echo "homepage failed"; exit 1; }
+# Buffer the page before grepping: with pipefail, `curl | grep -q` fails once the
+# page outgrows one pipe buffer (grep exits at first match, curl gets SIGPIPE).
+homepage=$(curl -fsS "${EXTRA[@]}" "$BASE/")
+grep -qi "manx" <<<"$homepage" || { echo "homepage failed"; exit 1; }
 
 resp=$(curl -fsS "${EXTRA[@]}" "$BASE/health")
 echo "$resp" | python3 -c "
