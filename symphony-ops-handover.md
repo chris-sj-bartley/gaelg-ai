@@ -198,16 +198,16 @@ Scripts to write:
 - [x] Phase 0: staging backend (`:8001`) + smoke/deploy scripts
 - [ ] Root filesystem freed (sysadmin — remove `/home/acp20rm`, 59 GB)
 - [ ] Nginx staging vhost (sysadmin)
-- [ ] Frontend uses relative `/api/`; confirm or fix
-- [ ] Phase 1: nvm + Node, rsync symphony from Titan, .env, WORKFLOW.md, service unit
-- [ ] Phase 2: verify Linear + GitHub MCP in `~/.claude/`, native integration, labels
-- [ ] Phase 3: GitHub Actions CI/CD pipeline
+- [x] Frontend uses relative `/api/`; confirm or fix *(confirmed 2026-07-07: `API_BASE=''`, endpoints at site root — nginx regex must list each one)*
+- [x] Phase 1: nvm + Node, rsync symphony from Titan, .env, WORKFLOW.md, service unit *(done 2026-06-20)*
+- [x] Phase 2: verify Linear + GitHub MCP in `~/.claude/`, native integration, labels *(labels incident/agent-ready/dep-bump auto-created by scripts/linear_issue.py)*
+- [x] Phase 3: GitHub Actions CI/CD pipeline *(2026-07-07: `.github/workflows/ci.yml` — checks job live; deploy-staging job scaffolded, disabled until runner→cassini SSH confirmed; enable via repo var `DEPLOY_ENABLED` + CASSINI_* secrets)*
 - [ ] Propose-only mode for ~1 week
 - [ ] Enable auto-merge for safe-class labels
-- [ ] Phase 4: health-watch.sh + housekeeping.sh cron entries
+- [x] Phase 4: health-watch.sh + housekeeping.sh *(2026-07-07: running as systemd **user timers**, not cron — crontab edits impossible while root FS is full. health-watch every 5 min, housekeeping Mon 09:00. Persistent units in `/exp/exp1/acp24csb/.config/systemd/user/`, live copies in `/run/user/1108/systemd/user/` — tmpfs, re-copy after reboot)*
 
 ## Open items
 
 - Confirm wildcard TLS cert covers `staging.manx-ai.shef.ac.uk`
 - Confirm SSH access from GitHub Actions runner to Cassini (or use self-hosted runner)
-- Confirm Linear project/team ID for issue creation in health watcher
+- ~~Confirm Linear project/team ID for issue creation in health watcher~~ *(team CHR `42d1702f-62b4-4ed8-96b8-0e42b0c72871`; scripts resolve it by key at runtime)*

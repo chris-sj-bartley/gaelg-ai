@@ -1,0 +1,68 @@
+# CI for the Manx AI web platform (Phase 3 of symphony-ops-handover.md).
+#
+# What runs on GitHub's runners is deliberately light: the real dependency set
+# (torch, whisper, kNN-VC) only exists on cassini, so CI checks that the code
+# is *sound* (syntax, undefined names, script syntax, frontend markers) rather
+# than re-building the model stack.
+#
+# Deploy-to-staging over SSH is scaffolded but disabled until the open item
+# "confirm SSH access from GitHub Actions runner to cassini" is resolved
+# (cassini may only accept SSH from campus). Enable by setting the repo
+# variable DEPLOY_ENABLED=true and adding CASSINI_SSH_KEY / CASSINI_HOST /
+# CASSINI_USER secrets.
+
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [master, staging]
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          # cassini's shared venv is 3.8 — keep CI honest about what will run
+          python-version: "3.8"
+
+      - name: Python syntax (compile all backend/bot sources)
+        run: python -m compileall -q backend/ telegram_bot.py scripts/linear_issue.py
+
+      - name: Lint (errors and undefined names only)
+        run: |
+          pip install --quiet ruff
+          # E9/F only: real breakage (syntax errors, undefined names, unused
+          # imports), not style — the codebase predates any formatter.
+          ruff check --select E9,F backend/ telegram_bot.py scripts/linear_issue.py
+
+      - name: Shell script syntax
+        run: |
+          bash -n healthcheck.sh
+          for f in scripts/*.sh; do bash -n "$f"; done
+
+      - name: Frontend sanity
+        run: |
+          test -s frontend/index.html
+          grep -q "</html>" frontend/index.html
+          grep -q "API_BASE" frontend/index.html
+          # TLS material and editor backups must never be committed
+          ! ls frontend/*.pem frontend/*.save 2>/dev/null
+
+  deploy-staging:
+    # Disabled until runner->cassini SSH is confirmed (see header comment).
+    if: github.ref == 'refs/heads/staging' && vars.DEPLOY_ENABLED == 'true'
+    needs: checks
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Deploy and smoke-test staging
+        run: |
+          echo "${{ secrets.CASSINI_SSH_KEY }}" > key && chmod 600 key
+          ssh -i key -o StrictHostKeyChecking=accept-new \
+            "${{ secrets.CASSINI_USER }}@${{ secrets.CASSINI_HOST }}" \
+            '/exp/exp1/acp24csb/web_platform/scripts/deploy-backend.sh staging \
+             && /exp/exp1/acp24csb/web_platform/scripts/smoke.sh http://127.0.0.1:8001'
