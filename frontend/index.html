@@ -347,6 +347,7 @@ button.action-btn.recording{background:var(--warn)!important;box-shadow:0 2px 10
       <button class="splash-tab-btn active" data-tab="speak" data-i18n="tab.speak" onclick="selectSplashTab('speak')">🗣 Speak</button>
       <button class="splash-tab-btn" data-tab="listen" data-i18n="tab.listen" onclick="selectSplashTab('listen')">👂 Listen</button>
       <button class="splash-tab-btn" data-tab="translate" data-i18n="tab.translate" onclick="selectSplashTab('translate')">🔄 Translate</button>
+      <button class="splash-tab-btn" data-tab="timestamp" data-i18n="tab.timestamp" onclick="selectSplashTab('timestamp')">⏱ Timestamp</button>
       <button class="splash-tab-btn" data-tab="about" data-i18n="tab.about" onclick="selectSplashTab('about')">👤 About</button>
       <button class="splash-tab-btn" data-tab="feedback" data-i18n="tab.feedback" onclick="selectSplashTab('feedback')">💬 Feedback</button>
     </div>
@@ -476,6 +477,52 @@ button.action-btn.recording{background:var(--warn)!important;box-shadow:0 2px 10
           </button>
         </div>
       </div>
+    </div>
+
+    <div class="tab-panel" id="tab-timestamp">
+      <div class="section-intro"><h2 data-i18n="sec.timestamp.h2">Timestamping</h2><p data-i18n="sec.timestamp.p">Upload a Manx recording <strong>and its transcript</strong> to get word- and phrase-level timestamps (forced alignment). Longer recordings are fine here; alignment runs in the background and can take a few minutes.</p></div>
+
+      <div class="card" style="display:flex;flex-direction:column;gap:1.1rem;">
+
+        <!-- Audio upload -->
+        <div>
+          <div class="ls-title" style="text-align:left;padding:0 0 0.5rem 0;" data-i18n="card.ts.upload">Upload audio</div>
+          <div id="tsUploadZone" style="border:1.5px solid var(--orange-rule);border-radius:var(--r-sm);background:#fff;padding:1.1rem 1.25rem;display:flex;align-items:center;gap:1rem;cursor:pointer;transition:border-color var(--transition);">
+            <input type="file" id="tsAudioFile" accept="audio/*" style="display:none"/>
+            <button type="button" id="tsUploadIconBtn" class="listen-icon-btn" style="flex:0 0 auto;width:52px;height:52px;" aria-label="Choose audio file"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/></svg></button>
+            <div style="min-width:0;flex:1;">
+              <div id="tsFileName" style="font-family:var(--mono);font-size:0.75rem;color:#a09585;font-weight:500;word-break:break-all;">Choose or drop an audio file…</div>
+              <div style="font-family:var(--mono);font-size:0.63rem;color:#a09585;margin-top:0.25rem;">wav · mp3 · m4a · flac · ogg</div>
+            </div>
+            <button id="tsClearFile" type="button" style="display:none;background:none;border:1px solid var(--orange-rule);border-radius:6px;color:#a09585;font-family:var(--mono);font-size:0.67rem;padding:0.25rem 0.6rem;cursor:pointer;transition:color 0.2s ease,border-color 0.2s ease;" onmouseover="this.style.color='var(--warn)';this.style.borderColor='var(--warn)';" onmouseout="this.style.color='#a09585';this.style.borderColor='var(--orange-rule)';">✕ Clear</button>
+          </div>
+        </div>
+
+        <!-- Transcript -->
+        <div>
+          <div class="ls-title" style="text-align:left;padding:0 0 0.5rem 0;" data-i18n="card.ts.transcript">Paste the transcript</div>
+          <textarea id="tsTranscript" data-i18n-placeholder="placeholder.ts" placeholder="Paste the transcript of the recording here…" style="width:100%;min-height:150px;background:#fff;border:1.5px solid var(--orange-rule);border-radius:var(--r-sm);padding:0.9rem 1rem;resize:vertical;font-family:var(--sans);font-size:0.95rem;line-height:1.6;box-sizing:border-box;"></textarea>
+        </div>
+
+        <!-- Options -->
+        <div style="display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;">
+          <label for="tsMode" style="font-family:var(--mono);font-size:0.7rem;color:#a09585;letter-spacing:0.04em;" data-i18n="lbl.ts.detail">Detail</label>
+          <select id="tsMode" style="background:#fff;border:1.5px solid var(--orange-rule);border-radius:6px;padding:0.4rem 0.6rem;font-family:var(--mono);font-size:0.72rem;color:var(--orange-mid);cursor:pointer;">
+            <option value="both" data-i18n="opt.ts.both">Words &amp; phrases</option>
+            <option value="word" data-i18n="opt.ts.word">Words only</option>
+            <option value="phrase" data-i18n="opt.ts.phrase">Phrases only</option>
+          </select>
+        </div>
+
+        <div class="btn-row" style="margin-top:0">
+          <button class="action-btn btn-orange" id="tsSubmitBtn" type="button">
+            <span class="spinner"></span>
+            <span class="btn-label" data-i18n-label="btn.timestamp" data-i18n-loading="btn.timestamp.loading" data-label="Timestamp" data-loading="Working…"></span>
+          </button>
+        </div>
+      </div>
+
+      <div class="result-card" id="tsResult" tabindex="-1" style="padding:0;overflow:hidden;border-color:var(--orange-rule);display:none;"><div class="tr-title" data-i18n="lbl.ts.results">Timestamps</div><div id="tsBody" style="padding:1.25rem 1.5rem;position:relative;"></div></div>
     </div>
 
     <div class="tab-panel" id="tab-about">
@@ -670,6 +717,19 @@ const T = {
     'card.upload':        'Upload Manx audio',
     'btn.transcribe':     'Transcribe',
     'btn.transcribe.loading': 'Transcribing\u2026',
+    'tab.timestamp':      '\u23f1 Timestamp',
+    'sec.timestamp.h2':   'Timestamping',
+    'sec.timestamp.p':    'Upload a Manx recording <strong>and its transcript</strong> to get word- and phrase-level timestamps (forced alignment) \u2014 for subtitles, Audacity labels, or lining up text with audio. Longer recordings are fine here; alignment runs in the background and can take a few minutes.',
+    'card.ts.upload':     'Upload audio',
+    'card.ts.transcript': 'Paste the transcript',
+    'placeholder.ts':     'Paste the transcript of the recording here\u2026 (plain text; numbers written as words work best)',
+    'lbl.ts.detail':      'Detail',
+    'opt.ts.both':        'Words & phrases',
+    'opt.ts.word':        'Words only',
+    'opt.ts.phrase':      'Phrases only',
+    'btn.timestamp':      'Timestamp',
+    'btn.timestamp.loading': 'Working\u2026',
+    'lbl.ts.results':     'Timestamps',
     'card.record':        'Record your Manx',
     'card.record.desc':   'Click to start recording from your microphone',
     'btn.record':         '\u23fa  Start',
@@ -746,7 +806,7 @@ async function withSpin(fn) {
 
 const splash = document.getElementById('splash');
 
-const VALID_TABS = ['speak','listen','translate','about','feedback'];
+const VALID_TABS = ['speak','listen','translate','timestamp','about','feedback'];
 
 // UI only — no history change
 function showTab(name) {
@@ -1289,6 +1349,134 @@ function goToFeedback(topic) {
 function setLoading(btn,on) { btn.disabled=on; btn.classList.toggle('loading',on); }
 
 function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ── Timestamp: forced alignment (async job + polling) ─────────────────
+(function(){
+  const fileInput  = document.getElementById('tsAudioFile');
+  const uploadZone = document.getElementById('tsUploadZone');
+  const iconBtn    = document.getElementById('tsUploadIconBtn');
+  const fileNameEl = document.getElementById('tsFileName');
+  const clearBtn   = document.getElementById('tsClearFile');
+  const transcriptEl = document.getElementById('tsTranscript');
+  const modeEl     = document.getElementById('tsMode');
+  const submitBtn  = document.getElementById('tsSubmitBtn');
+  const rc = document.getElementById('tsResult');
+  const rb = document.getElementById('tsBody');
+  if (!submitBtn) return;  // panel not present
+
+  const DEFAULT_NAME = 'Choose or drop an audio file…';
+  const FORMAT_LABELS = {
+    words_csv: 'Words · CSV', words_srt: 'Words · SRT', words_txt: 'Words · labels',
+    phrases_csv: 'Phrases · CSV', phrases_srt: 'Phrases · SRT', phrases_txt: 'Phrases · labels',
+    ctm: 'Raw CTM',
+  };
+  let tsFile = null, pollTimer = null;
+
+  function setFile(f){
+    if (!f) return;
+    tsFile = f;
+    fileNameEl.textContent = f.name;
+    fileNameEl.style.color = 'var(--orange-mid)';
+    clearBtn.style.display = '';
+  }
+  function clearFile(){
+    tsFile = null; fileInput.value = '';
+    fileNameEl.textContent = DEFAULT_NAME;
+    fileNameEl.style.color = '#a09585';
+    clearBtn.style.display = 'none';
+  }
+  function showResult(html, isError){
+    rc.className = 'result-card visible' + (isError ? ' error' : '');
+    rc.style.display = '';
+    rb.innerHTML = html;
+    revealResult(rc);
+  }
+  function stopPolling(){ if (pollTimer){ clearInterval(pollTimer); pollTimer = null; } }
+
+  iconBtn.addEventListener('click', e => { e.stopPropagation(); fileInput.click(); });
+  uploadZone.addEventListener('click', () => fileInput.click());
+  clearBtn.addEventListener('click', e => { e.stopPropagation(); clearFile(); });
+  fileInput.addEventListener('change', () => setFile(fileInput.files[0]));
+  uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.style.borderColor = 'var(--orange-mid)'; });
+  uploadZone.addEventListener('dragleave', () => { uploadZone.style.borderColor = ''; });
+  uploadZone.addEventListener('drop', e => { e.preventDefault(); uploadZone.style.borderColor = ''; if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]); });
+
+  function renderProgress(status){
+    let msg;
+    if (status.status === 'queued'){
+      const pos = status.queue_position || 0;
+      msg = pos > 0 ? `Queued — ${pos} job${pos>1?'s':''} ahead of yours…` : 'Queued…';
+    } else {
+      msg = 'Aligning your recording… this can take a few minutes for long audio. You can leave this tab open.';
+    }
+    showResult(`<div style="display:flex;align-items:center;gap:0.8rem;"><span class="spinner" style="display:inline-block;position:static;"></span><span style="font-family:var(--sans);font-size:0.95rem;font-weight:300;">${escHtml(msg)}</span></div>`, false);
+  }
+
+  function renderDone(id, results){
+    const links = results.map(k =>
+      `<a class="ts-dl" href="${API_BASE}/timestamp/${id}/result?format=${k}" download style="display:inline-block;border:1.5px solid var(--orange-rule);border-radius:8px;padding:0.5rem 0.9rem;font-family:var(--mono);font-size:0.72rem;color:var(--orange-mid);text-decoration:none;transition:background 0.18s,border-color 0.18s;" onmouseover="this.style.background='var(--orange-pale)';this.style.borderColor='var(--orange-mid)';" onmouseout="this.style.background='';this.style.borderColor='var(--orange-rule)';">↓ ${escHtml(FORMAT_LABELS[k]||k)}</a>`
+    ).join('');
+    showResult(
+      `<p style="font-family:var(--sans);font-size:1rem;font-weight:300;line-height:1.6;margin-bottom:0.9rem;">Alignment complete. Download your timestamps:</p>`+
+      `<div style="display:flex;flex-wrap:wrap;gap:0.55rem;">${links}</div>`+
+      `<p style="font-family:var(--sans);font-size:0.8rem;font-weight:300;color:#8a6040;line-height:1.55;margin-top:1rem;">CSV rows carry a <em>status</em> column (aligned / interpolated / unaligned). SRT files are subtitles; “labels” files are Audacity label tracks. Files are kept for 24 hours.</p>`+
+      `<div style="margin-top:0.9rem;text-align:right;"><a class="fb-link" href="#feedback" onclick="goToFeedback('Timestamp (forced alignment)');return false;">${t('js.feedback.link')}</a></div>`,
+      false
+    );
+  }
+
+  async function poll(id){
+    try {
+      const res = await fetch(`${API_BASE}/timestamp/${id}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Could not check job status.');
+      if (data.status === 'queued' || data.status === 'running'){
+        renderProgress(data);
+        return;
+      }
+      stopPolling();
+      setLoading(submitBtn, false);
+      if (data.status === 'done'){
+        renderDone(id, data.results || []);
+      } else {
+        showResult(`<div class="error-msg">⚠ ${escHtml(data.error || 'Alignment failed. Please try again.')}</div>`, true);
+      }
+    } catch(err){
+      stopPolling();
+      setLoading(submitBtn, false);
+      showResult(`<div class="error-msg">⚠ ${escHtml(err.message || 'Lost contact with the server.')}</div>`, true);
+    }
+  }
+
+  submitBtn.addEventListener('click', async () => {
+    if (!tsFile){
+      showResult(`<div class="error-msg">⚠ Please choose an audio file first.</div>`, true);
+      return;
+    }
+    if (!transcriptEl.value.trim()){
+      showResult(`<div class="error-msg">⚠ Please paste the transcript of the recording.</div>`, true);
+      return;
+    }
+    stopPolling();
+    setLoading(submitBtn, true);
+    showResult(`<div style="display:flex;align-items:center;gap:0.8rem;"><span class="spinner" style="display:inline-block;position:static;"></span><span style="font-family:var(--sans);font-size:0.95rem;font-weight:300;">Uploading…</span></div>`, false);
+    try {
+      const form = new FormData();
+      form.append('audio', tsFile, tsFile.name);
+      form.append('transcript', transcriptEl.value);
+      form.append('mode', modeEl.value);
+      form.append('formats', 'csv,srt,txt');
+      const res = await fetch(`${API_BASE}/timestamp`, { method: 'POST', body: form });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Upload failed.');
+      renderProgress(data);
+      pollTimer = setInterval(() => poll(data.job_id), 3000);
+    } catch(err){
+      setLoading(submitBtn, false);
+      showResult(`<div class="error-msg">⚠ ${escHtml(err.message || 'Upload failed.')}</div>`, true);
+    }
+  });
+})();
 </script>
 </body>
 </html>

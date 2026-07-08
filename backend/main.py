@@ -5,7 +5,7 @@ ASR: Whisper-large-v3 fine-tuned on Manx    — cuda:1, loaded at startup
 MT:  NLLB-200 distilled 600M (gv2en/en2gv)  — cuda:0, loaded at startup
 """
 
-from fastapi import FastAPI, HTTPException, UploadFile, File, Request
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -256,6 +256,7 @@ async def cleanup_loop():
             # Sleep first to let startup finish
             await asyncio.sleep(OUTPUT_CLEANUP_INTERVAL_MINUTES * 60)
             cleanup_old_outputs()
+            cleanup_old_timestamp_jobs()
         except asyncio.CancelledError:
             break
         except Exception as e:
@@ -846,6 +847,9 @@ async def health_check():
         "status": "healthy" if all(model_status.values()) else "unhealthy",
         "models": model_status,
         "errors": model_errors if model_errors else None,
+        # Non-gating: the timestamper is a subprocess tool, not a resident model,
+        # so it must not affect the watched all-models health signal above.
+        "timestamp": timestamp_available(),
     }
 
 
@@ -1116,6 +1120,313 @@ async def translate(req: TranslateRequest, request: Request):
         raise HTTPException(status_code=500, detail=f"Translation error: {e}")
 
 
+# ---------------------------------------------------------------------------
+# Timestamper — forced alignment of audio against a transcript (async jobs)
+# ---------------------------------------------------------------------------
+# Runs the manx-p2 aligner inside its Apptainer image via scripts/run-timestamper.sh.
+# Jobs are long (minutes for long recordings), so the API is ASYNCHRONOUS: POST
+# returns a job id immediately; the client polls GET /timestamp/{id}, then downloads
+# outputs from GET /timestamp/{id}/result?format=...  Only ONE job runs at a time
+# (timestamp_sem) so each gets the full CPU (nj); the rest queue.
+
+TIMESTAMPER_WRAPPER = os.environ.get(
+    "TIMESTAMPER_WRAPPER",
+    os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "scripts", "run-timestamper.sh")),
+)
+TIMESTAMPER_SIF = os.environ.get(
+    "TIMESTAMPER_SIF", "/exp/exp1/acp24csb/model_instances/manx_timestamper/timestamper.sif"
+)
+TIMESTAMP_JOBS_DIR = os.environ.get("TIMESTAMP_JOBS_DIR", "/exp/exp1/acp24csb/tmp/timestamp-jobs")
+os.makedirs(TIMESTAMP_JOBS_DIR, exist_ok=True)
+TIMESTAMP_NJ = int(os.environ.get("TIMESTAMP_NJ", "32"))
+TIMESTAMP_MAX_UPLOAD_MB = int(os.environ.get("TIMESTAMP_MAX_UPLOAD_MB", "200"))
+TIMESTAMP_MAX_DURATION_SEC = int(os.environ.get("TIMESTAMP_MAX_DURATION_SEC", "7200"))  # 2 h
+TIMESTAMP_MAX_TRANSCRIPT_CHARS = int(os.environ.get("TIMESTAMP_MAX_TRANSCRIPT_CHARS", "500000"))
+TIMESTAMP_TIMEOUT_SECONDS = int(os.environ.get("TIMESTAMP_TIMEOUT_SECONDS", "5400"))  # 90 min wall
+TIMESTAMP_JOB_TTL_HOURS = int(os.environ.get("TIMESTAMP_JOB_TTL_HOURS", "24"))
+INTERNAL_STEM = "recording"  # uploaded audio saved as this; outputs are recording_words.csv etc.
+
+# One job at a time -> each gets all the cores.
+timestamp_sem = asyncio.Semaphore(1)
+# job_id -> {status, created, audio_name, stem, mode, formats, duration_sec, results, error}
+_timestamp_jobs = {}
+
+# download key -> (output-file suffix, media type)
+_TIMESTAMP_FORMATS = {
+    "words_csv":   ("_words.csv",   "text/csv"),
+    "words_srt":   ("_words.srt",   "application/x-subrip"),
+    "words_txt":   ("_words.txt",   "text/plain; charset=utf-8"),
+    "phrases_csv": ("_phrases.csv", "text/csv"),
+    "phrases_srt": ("_phrases.srt", "application/x-subrip"),
+    "phrases_txt": ("_phrases.txt", "text/plain; charset=utf-8"),
+    "ctm":         (".ctm",         "text/plain; charset=utf-8"),
+}
+
+TIMESTAMP_AUDIO_TYPES = {"audio/wav", "audio/wave", "audio/x-wav", "audio/mpeg",
+                         "audio/mp3", "audio/mp4", "audio/x-m4a", "audio/aac",
+                         "audio/ogg", "audio/webm", "audio/flac", "audio/x-flac",
+                         "application/octet-stream"}
+
+
+def timestamp_available():
+    """The timestamper is a subprocess tool, not a resident model: it's 'available'
+    when its wrapper and image are present. Kept OUT of model_status so it never
+    flips the watched all-models health signal."""
+    return os.path.isfile(TIMESTAMPER_WRAPPER) and os.path.isfile(TIMESTAMPER_SIF)
+
+
+def _valid_job_id(job_id: str) -> bool:
+    return len(job_id) == 32 and all(c in "0123456789abcdef" for c in job_id)
+
+
+def cleanup_old_timestamp_jobs():
+    """Delete timestamp job dirs older than TIMESTAMP_JOB_TTL_HOURS and forget them."""
+    import shutil
+    try:
+        cutoff = time.time() - TIMESTAMP_JOB_TTL_HOURS * 3600
+        for job_id in list(_timestamp_jobs.keys()):
+            job = _timestamp_jobs.get(job_id)
+            if not job or job.get("created", 0) >= cutoff:
+                continue
+            if job.get("status") in ("queued", "running"):
+                continue  # never GC an active job
+            shutil.rmtree(os.path.join(TIMESTAMP_JOBS_DIR, job_id), ignore_errors=True)
+            _timestamp_jobs.pop(job_id, None)
+        # Sweep orphan dirs with no in-memory record (e.g. left by a restart).
+        for name in os.listdir(TIMESTAMP_JOBS_DIR):
+            p = os.path.join(TIMESTAMP_JOBS_DIR, name)
+            if os.path.isdir(p) and name not in _timestamp_jobs and os.path.getmtime(p) < cutoff:
+                shutil.rmtree(p, ignore_errors=True)
+    except Exception as e:
+        logger.exception(f"Timestamp job cleanup failed: {e}")
+
+
+def _effective_nj(duration_sec):
+    """Parallel jobs are bounded by how many ~30 s segments the recording yields —
+    Kaldi refuses to split N utterances across more than N jobs. Cap nj by duration
+    so short clips don't crash the split, while long recordings still use all cores."""
+    if not duration_sec or duration_sec <= 0:
+        return min(TIMESTAMP_NJ, 4)          # unknown duration: modest, safe default
+    return max(1, min(TIMESTAMP_NJ, int(duration_sec // 30)))
+
+
+def _run_timestamper_blocking(audio_path, transcript_path, outdir, mode, formats, nj):
+    """Blocking: invoke the wrapper script. Returns (returncode, tail_of_output)."""
+    proc = subprocess.run(
+        [TIMESTAMPER_WRAPPER, "--nj", str(nj),
+         "--mode", mode, "--formats", formats,
+         audio_path, transcript_path, outdir],
+        capture_output=True, text=True, timeout=TIMESTAMP_TIMEOUT_SECONDS,
+    )
+    tail = "\n".join((proc.stdout + proc.stderr).strip().splitlines()[-8:])
+    return proc.returncode, tail
+
+
+async def _process_timestamp_job(job_id, audio_path, transcript_path, outdir, stem, mode, formats, nj):
+    job = _timestamp_jobs[job_id]
+    loop = asyncio.get_running_loop()
+    async with timestamp_sem:              # one at a time -> full CPU each
+        job["status"] = "running"
+        job["started"] = time.time()
+        logger.info(f"[timestamp {job_id}] running (mode={mode}, formats={formats}, nj={nj})")
+        try:
+            rc, tail = await asyncio.wait_for(
+                loop.run_in_executor(None, _run_timestamper_blocking,
+                                     audio_path, transcript_path, outdir, mode, formats, nj),
+                timeout=TIMESTAMP_TIMEOUT_SECONDS + 120,
+            )
+            if rc == 0:
+                job["results"] = [k for k, (suf, _) in _TIMESTAMP_FORMATS.items()
+                                  if os.path.isfile(os.path.join(outdir, stem + suf))]
+                job["status"] = "done"
+                logger.info(f"[timestamp {job_id}] done — {len(job['results'])} outputs")
+            else:
+                job["status"] = "error"
+                job["error"] = f"Alignment failed (exit {rc}). {tail}".strip()
+                logger.error(f"[timestamp {job_id}] failed rc={rc}: {tail}")
+        except asyncio.TimeoutError:
+            job["status"] = "error"
+            job["error"] = f"Alignment timed out (over {TIMESTAMP_TIMEOUT_SECONDS}s)."
+            logger.error(f"[timestamp {job_id}] timeout")
+        except Exception as e:
+            job["status"] = "error"
+            job["error"] = f"Alignment error: {e}"
+            logger.exception(f"[timestamp {job_id}] crashed")
+        finally:
+            job["finished"] = time.time()
+            # Uploaded audio + transcript are no longer needed once results exist.
+            for p in (audio_path, transcript_path):
+                try:
+                    if os.path.exists(p):
+                        os.unlink(p)
+                except Exception:
+                    pass
+
+
+def _active_jobs_before(job_id):
+    """Queue position: count queued/running jobs inserted before this one (0 == next/running)."""
+    n = 0
+    for jid, j in _timestamp_jobs.items():
+        if jid == job_id:
+            break
+        if j["status"] in ("queued", "running"):
+            n += 1
+    return n
+
+
+@app.post("/timestamp")
+async def timestamp_submit(
+    request: Request,
+    audio: UploadFile = File(...),
+    transcript: str = Form(...),
+    mode: str = Form("both"),
+    formats: str = Form("csv,srt,txt"),
+):
+    import shutil
+    ip = request.client.host if request.client else "unknown"
+    allowed, retry_after = check_rate_limit(ip)
+    if not allowed:
+        raise HTTPException(status_code=429,
+                            detail=f"Rate limit exceeded. Try again in {retry_after}s.",
+                            headers={"Retry-After": str(retry_after)})
+
+    if not timestamp_available():
+        raise HTTPException(status_code=503, detail="Timestamper is unavailable on this server.")
+
+    # Validate options
+    if mode not in ("word", "phrase", "both"):
+        raise HTTPException(status_code=400, detail="mode must be 'word', 'phrase', or 'both'.")
+    fmt_list = [f.strip() for f in formats.split(",") if f.strip()]
+    if not fmt_list or any(f not in ("csv", "srt", "txt") for f in fmt_list):
+        raise HTTPException(status_code=400, detail="formats must be a comma list of csv, srt, txt.")
+
+    if not transcript.strip():
+        raise HTTPException(status_code=400, detail="Transcript is empty.")
+    if len(transcript) > TIMESTAMP_MAX_TRANSCRIPT_CHARS:
+        raise HTTPException(status_code=400,
+                            detail=f"Transcript too long (max {TIMESTAMP_MAX_TRANSCRIPT_CHARS} chars).")
+    if not audio.content_type or audio.content_type not in TIMESTAMP_AUDIO_TYPES:
+        raise HTTPException(status_code=400,
+                            detail=f"Unsupported or missing audio type: {audio.content_type}")
+
+    free_mb, enough = check_disk_space()
+    if not enough:
+        raise HTTPException(status_code=507, detail="Server is low on disk space. Try again later.")
+
+    job_id = uuid.uuid4().hex
+    outdir = os.path.join(TIMESTAMP_JOBS_DIR, job_id)
+    os.makedirs(outdir, exist_ok=True)
+    audio_path = os.path.join(outdir, INTERNAL_STEM + ".bin")   # ffmpeg detects format from content
+    transcript_path = os.path.join(outdir, "transcript.txt")
+
+    # Stream the upload to disk with a hard size cap (avoid buffering a huge file in RAM).
+    max_bytes = TIMESTAMP_MAX_UPLOAD_MB * 1024 * 1024
+    written = 0
+    try:
+        with open(audio_path, "wb") as f:
+            while True:
+                chunk = await audio.read(1024 * 1024)
+                if not chunk:
+                    break
+                written += len(chunk)
+                if written > max_bytes:
+                    raise HTTPException(status_code=413,
+                                        detail=f"Audio too large (max {TIMESTAMP_MAX_UPLOAD_MB} MB).")
+                f.write(chunk)
+        if written == 0:
+            raise HTTPException(status_code=400, detail="Empty audio file.")
+        with open(transcript_path, "w", encoding="utf-8") as f:
+            f.write(transcript)
+    except HTTPException:
+        shutil.rmtree(outdir, ignore_errors=True)
+        raise
+    except Exception as e:
+        shutil.rmtree(outdir, ignore_errors=True)
+        logger.exception("timestamp upload failed")
+        raise HTTPException(status_code=500, detail=f"Upload failed: {e}")
+
+    # Duration guard (ffprobe reads any format; bounds runtime/disk before we queue).
+    duration = None
+    try:
+        probe = subprocess.run(
+            ["ffprobe", "-v", "error", "-show_entries", "format=duration",
+             "-of", "default=noprint_wrappers=1:nokey=1", audio_path],
+            capture_output=True, text=True, timeout=15,
+        )
+        duration = float(probe.stdout.strip())
+        if duration > TIMESTAMP_MAX_DURATION_SEC:
+            shutil.rmtree(outdir, ignore_errors=True)
+            raise HTTPException(
+                status_code=400,
+                detail=f"Audio too long ({duration/60:.1f} min). Maximum is "
+                       f"{TIMESTAMP_MAX_DURATION_SEC // 60} minutes.")
+    except HTTPException:
+        raise
+    except Exception:
+        pass  # unreadable duration -> let the aligner attempt it
+
+    nj = _effective_nj(duration)
+    _timestamp_jobs[job_id] = {
+        "status": "queued",
+        "created": time.time(),
+        "audio_name": audio.filename or "recording",
+        "stem": INTERNAL_STEM,
+        "mode": mode,
+        "formats": ",".join(fmt_list),
+        "duration_sec": duration,
+        "nj": nj,
+        "results": [],
+        "error": None,
+    }
+    asyncio.create_task(_process_timestamp_job(
+        job_id, audio_path, transcript_path, outdir, INTERNAL_STEM, mode, ",".join(fmt_list), nj))
+    logger.info(f"[timestamp {job_id}] queued ({audio.filename}, {written/1e6:.1f} MB, "
+                f"{'%.0fs' % duration if duration else 'unknown dur'}, nj={nj})")
+
+    return {"job_id": job_id, "status": "queued", "queue_position": _active_jobs_before(job_id)}
+
+
+@app.get("/timestamp/{job_id}")
+async def timestamp_status(job_id: str):
+    if not _valid_job_id(job_id):
+        raise HTTPException(status_code=400, detail="Invalid job id.")
+    job = _timestamp_jobs.get(job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found (it may have expired).")
+    resp = {
+        "job_id": job_id,
+        "status": job["status"],
+        "mode": job["mode"],
+        "formats": job["formats"],
+        "audio_name": job["audio_name"],
+        "duration_sec": job.get("duration_sec"),
+    }
+    if job["status"] == "done":
+        resp["results"] = job["results"]
+    elif job["status"] == "error":
+        resp["error"] = job["error"]
+    elif job["status"] in ("queued", "running"):
+        resp["queue_position"] = _active_jobs_before(job_id)
+    return resp
+
+
+@app.get("/timestamp/{job_id}/result")
+async def timestamp_result(job_id: str, format: str):
+    if not _valid_job_id(job_id):
+        raise HTTPException(status_code=400, detail="Invalid job id.")
+    job = _timestamp_jobs.get(job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found (it may have expired).")
+    if job["status"] != "done":
+        raise HTTPException(status_code=409, detail=f"Job not finished (status: {job['status']}).")
+    if format not in _TIMESTAMP_FORMATS:
+        raise HTTPException(status_code=400, detail=f"Unknown format: {format}")
+    suffix, media = _TIMESTAMP_FORMATS[format]
+    path = os.path.join(TIMESTAMP_JOBS_DIR, job_id, job["stem"] + suffix)
+    if not os.path.isfile(path):
+        raise HTTPException(status_code=404, detail=f"Result '{format}' not available for this job.")
+    base = os.path.splitext(job["audio_name"])[0] or "timestamps"
+    return FileResponse(path, media_type=media, filename=base + suffix)
 
 
 # ---------------------------------------------------------------------------
