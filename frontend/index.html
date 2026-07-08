@@ -62,13 +62,12 @@ body.at-home{overflow:hidden;}
 .splash-inner h1{font-family:var(--serif);font-size:clamp(2.2rem,5vw,3.2rem);line-height:1.1;margin-bottom:0.75rem;letter-spacing:-0.02em;}
 .splash-inner h1 em{font-style:italic;color:#8dd4a8;}
 .splash-inner p{font-size:1.1rem;font-weight:300;opacity:0.88;line-height:1.65;max-width:52ch;margin:0 auto 1.5rem;}
-.hero-links{display:flex;align-items:stretch;justify-content:center;gap:1rem;}
-.hero-link-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;color:#1a2a1e;background:#8dd4a8;border:none;border-radius:14px;padding:1.25em 2em;cursor:pointer;transition:background 0.18s,transform 0.12s;width:160px;}
+.hero-links{display:flex;align-items:stretch;justify-content:center;gap:1.1rem;flex-wrap:wrap;}
+.hero-link-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;color:#1a2a1e;background:#8dd4a8;border:none;border-radius:16px;padding:1.9em 2.2em;cursor:pointer;transition:background 0.18s,transform 0.12s;width:200px;}
 .hero-link-btn:hover{background:#a4debb;transform:translateY(-2px);}
-.hero-link-emoji{font-size:2rem;line-height:1;margin-bottom:0.4em;}
-.hero-link-name{font-family:var(--mono);font-size:0.82rem;letter-spacing:0.1em;text-transform:uppercase;font-weight:700;color:#1a2a1e;margin-bottom:0.3em;}
-.hero-link-sub{font-family:var(--mono);font-size:0.78rem;color:#2a4a30;opacity:0.8;white-space:nowrap;}
-.hero-links-about{display:flex;justify-content:center;gap:1rem;margin-top:0.75rem;}
+.hero-link-emoji{font-size:2.6rem;line-height:1;margin-bottom:0.5em;}
+.hero-link-name{font-family:var(--mono);font-size:0.92rem;letter-spacing:0.1em;text-transform:uppercase;font-weight:700;color:#1a2a1e;margin-bottom:0.35em;}
+.hero-link-sub{font-family:var(--mono);font-size:0.84rem;color:#2a4a30;opacity:0.8;white-space:nowrap;}
 #splashFooter{flex-shrink:0;text-align:center;padding:0.9rem 1.5rem;font-family:var(--mono);font-size:0.6rem;letter-spacing:0.06em;line-height:1.6;color:rgba(255,255,255,0.55);border-top:1px solid rgba(255,255,255,0.1);}
 #splashFooter strong{color:rgba(255,255,255,0.85);}
 #splashFooter a{color:rgba(255,255,255,0.55);text-decoration:underline;text-underline-offset:2px;}
@@ -330,12 +329,10 @@ button.action-btn.recording{background:var(--warn)!important;box-shadow:0 2px 10
           <span class="hero-link-name">Translate</span>
           <span class="hero-link-sub">Manx &harr; English</span>
         </button>
-      </div>
-      <div class="hero-links-about">
-        <button class="hero-link-btn" onclick="selectSplashTab('about')">
-          <span class="hero-link-emoji">👤</span>
-          <span class="hero-link-name">About</span>
-          <span class="hero-link-sub" style="visibility:hidden;">·</span>
+        <button class="hero-link-btn" onclick="selectSplashTab('timestamp')">
+          <span class="hero-link-emoji">⏱</span>
+          <span class="hero-link-name">Timestamp</span>
+          <span class="hero-link-sub">Audio + Text</span>
         </button>
       </div>
     </div>
@@ -348,7 +345,6 @@ button.action-btn.recording{background:var(--warn)!important;box-shadow:0 2px 10
       <button class="splash-tab-btn" data-tab="listen" data-i18n="tab.listen" onclick="selectSplashTab('listen')">👂 Listen</button>
       <button class="splash-tab-btn" data-tab="translate" data-i18n="tab.translate" onclick="selectSplashTab('translate')">🔄 Translate</button>
       <button class="splash-tab-btn" data-tab="timestamp" data-i18n="tab.timestamp" onclick="selectSplashTab('timestamp')">⏱ Timestamp</button>
-      <button class="splash-tab-btn" data-tab="about" data-i18n="tab.about" onclick="selectSplashTab('about')">👤 About</button>
       <button class="splash-tab-btn" data-tab="feedback" data-i18n="tab.feedback" onclick="selectSplashTab('feedback')">💬 Feedback</button>
     </div>
     <button class="hamburger" id="hamburgerBtn" onclick="toggleNav()" aria-label="Toggle menu" aria-expanded="false"><svg class="ham-open" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg><svg class="ham-close" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button>
