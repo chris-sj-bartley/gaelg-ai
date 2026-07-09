@@ -486,22 +486,26 @@ button.action-btn.recording{background:var(--warn)!important;box-shadow:0 2px 10
 
         <!-- Audio upload -->
         <div>
-          <div class="ls-title" style="text-align:left;padding:0 0 0.5rem 0;" data-i18n="card.ts.upload">Upload audio</div>
-          <div id="tsUploadZone" style="border:1.5px solid var(--orange-rule);border-radius:var(--r-sm);background:#fff;padding:1.1rem 1.25rem;display:flex;align-items:center;gap:1rem;cursor:pointer;transition:border-color var(--transition);">
-            <input type="file" id="tsAudioFile" accept="audio/*" style="display:none"/>
-            <button type="button" id="tsUploadIconBtn" class="listen-icon-btn" style="flex:0 0 auto;width:52px;height:52px;" aria-label="Choose audio file"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/></svg></button>
-            <div style="min-width:0;flex:1;">
-              <div id="tsFileName" style="font-family:var(--mono);font-size:0.75rem;color:#a09585;font-weight:500;word-break:break-all;">Choose or drop an audio file…</div>
-              <div style="font-family:var(--mono);font-size:0.63rem;color:#a09585;margin-top:0.25rem;">wav · mp3 · m4a · flac · ogg</div>
+          <div id="tsUploadZone" style="border:1.5px solid var(--orange-rule);border-radius:var(--r-sm);background:#fff;overflow:hidden;cursor:pointer;transition:border-color var(--transition);">
+            <div class="ls-title" data-i18n="card.ts.upload">Upload audio</div>
+            <div style="display:flex;align-items:center;gap:1rem;padding:1.1rem 1.25rem;">
+              <input type="file" id="tsAudioFile" accept="audio/*" style="display:none"/>
+              <button type="button" id="tsUploadIconBtn" class="listen-icon-btn" style="flex:0 0 auto;width:52px;height:52px;" aria-label="Choose audio file"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/></svg></button>
+              <div style="min-width:0;flex:1;">
+                <div id="tsFileName" style="font-family:var(--mono);font-size:0.75rem;color:#a09585;font-weight:500;word-break:break-all;">Choose or drop an audio file…</div>
+                <div style="font-family:var(--mono);font-size:0.63rem;color:#a09585;margin-top:0.25rem;">wav · mp3 · m4a · flac · ogg</div>
+              </div>
+              <button id="tsClearFile" type="button" style="display:none;background:none;border:1px solid var(--orange-rule);border-radius:6px;color:#a09585;font-family:var(--mono);font-size:0.67rem;padding:0.25rem 0.6rem;cursor:pointer;transition:color 0.2s ease,border-color 0.2s ease;" onmouseover="this.style.color='var(--warn)';this.style.borderColor='var(--warn)';" onmouseout="this.style.color='#a09585';this.style.borderColor='var(--orange-rule)';">✕ Clear</button>
             </div>
-            <button id="tsClearFile" type="button" style="display:none;background:none;border:1px solid var(--orange-rule);border-radius:6px;color:#a09585;font-family:var(--mono);font-size:0.67rem;padding:0.25rem 0.6rem;cursor:pointer;transition:color 0.2s ease,border-color 0.2s ease;" onmouseover="this.style.color='var(--warn)';this.style.borderColor='var(--warn)';" onmouseout="this.style.color='#a09585';this.style.borderColor='var(--orange-rule)';">✕ Clear</button>
           </div>
         </div>
 
         <!-- Transcript -->
         <div>
-          <div class="ls-title" style="text-align:left;padding:0 0 0.5rem 0;" data-i18n="card.ts.transcript">Paste the transcript</div>
-          <textarea id="tsTranscript" data-i18n-placeholder="placeholder.ts" placeholder="Paste the transcript of the recording here…" style="width:100%;min-height:150px;background:#fff;border:1.5px solid var(--orange-rule);border-radius:var(--r-sm);padding:0.9rem 1rem;resize:vertical;font-family:var(--sans);font-size:0.95rem;line-height:1.6;box-sizing:border-box;"></textarea>
+          <div class="tr-box">
+            <div class="tr-title" data-i18n="card.ts.transcript">Paste the transcript</div>
+            <textarea id="tsTranscript" data-i18n-placeholder="placeholder.ts" placeholder="Paste the transcript of the recording here…" style="width:100%;min-height:150px;background:#fff;border:none;border-radius:0;padding:0.9rem 1rem;resize:vertical;font-family:var(--sans);font-size:0.95rem;line-height:1.6;box-sizing:border-box;"></textarea>
+          </div>
         </div>
 
         <!-- Options -->
