@@ -977,9 +977,12 @@ function goToContact() {
   setTimeout(() => { const el = document.querySelector('.about-contact-section'); if (el) el.scrollIntoView({behavior:'smooth', block:'center'}); }, 150);
 }
 
-// ── Blog (Markdown posts loaded from /blog) ───────────────────────────────
-// Posts live in frontend/blog/: index.json lists them ({slug,title,date,summary,file})
-// and each post is a Markdown file. #blog shows the list; #blog/<slug> a post.
+// ── Blog (posts come from the personal Jekyll site's JSON feed) ────────────
+// The canonical blog is c-bartley.github.io (site/_posts). Jekyll builds a
+// /blog.json feed (list + already-rendered HTML per post); nginx proxies it to
+// /blog.json here so both sites always show the same posts. #blog shows the
+// list; #blog/<slug> a single post. (The old mini-Markdown parser below is now
+// unused — safe to delete once the feed is confirmed working.)
 const blogListEl = document.getElementById('blogList');
 const blogPostEl = document.getElementById('blogPost');
 let blogIndexPromise = null;
@@ -992,7 +995,7 @@ function blogFmtDate(d){
 }
 function loadBlogIndex(){
   if (blogIndexPromise) return blogIndexPromise;
-  blogIndexPromise = fetch('/blog/index.json')
+  blogIndexPromise = fetch('/blog.json')
     .then(r=>{ if(!r.ok) throw 0; return r.json(); })
     .then(list=>(Array.isArray(list)?list:[]).slice().sort((a,b)=>(Date.parse(b.date)||0)-(Date.parse(a.date)||0)))
     .catch(err=>{ blogIndexPromise = null; throw err; });   // clear cache so a later visit can retry
@@ -1055,18 +1058,15 @@ function renderBlogPost(slug){
   blogPostEl.style.display = '';
   const back = `<button class="blog-back" onclick="location.hash='blog'">&larr; ${blogEsc(t('blog.back'))}</button>`;
   window.scrollTo(0,0);
-  if(blogPostCache[slug]){ blogPostEl.innerHTML = back + blogPostCache[slug]; return; }
   blogPostEl.innerHTML = back + `<p class="blog-empty">${blogEsc(t('blog.loading'))}</p>`;
   loadBlogIndex().then(list=>{
-    const meta = list.find(p=>p.slug === slug);
-    if(!meta){ blogPostEl.innerHTML = back + `<p class="blog-empty">${blogEsc(t('blog.notfound'))}</p>`; return; }
-    return fetch('/blog/' + (meta.file || slug + '.md')).then(r=>{ if(!r.ok) throw 0; return r.text(); })
-      .then(md=>{
-        const html = `<article class="blog-post"><div class="blog-post-date">${blogEsc(blogFmtDate(meta.date))}</div><h1>${blogEsc(meta.title||slug)}</h1><div class="blog-prose">${mdToHtml(stripLeadingH1(md))}</div></article>`;
-        blogPostCache[slug] = html;
-        blogPostEl.innerHTML = back + html;
-        window.scrollTo(0,0);
-      });
+    const post = list.find(p=>p.slug === slug);
+    if(!post){ blogPostEl.innerHTML = back + `<p class="blog-empty">${blogEsc(t('blog.notfound'))}</p>`; return; }
+    // post.content is HTML already rendered by Jekyll on the canonical site;
+    // it's first-party content, injected as-is into our own prose styling.
+    const html = `<article class="blog-post"><div class="blog-post-date">${blogEsc(blogFmtDate(post.date))}</div><h1>${blogEsc(post.title||slug)}</h1><div class="blog-prose">${post.content||''}</div></article>`;
+    blogPostEl.innerHTML = back + html;
+    window.scrollTo(0,0);
   }).catch(()=>{ blogPostEl.innerHTML = back + `<p class="blog-empty">${blogEsc(t('blog.error'))}</p>`; });
 }
 function showBlogRoute(slug){ if(slug) renderBlogPost(slug); else renderBlogList(); }
