@@ -1063,7 +1063,7 @@ function renderBlogList(){
   blogListEl.innerHTML = `<p class="blog-empty">${blogEsc(t('blog.loading'))}</p>`;
   loadBlogIndex().then(list=>{
     blogListEl.innerHTML = list.length
-      ? list.map(p=>`<button class="blog-card" data-slug="${blogEsc(p.slug)}"><div class="blog-card-date">${blogEsc(blogFmtDate(p.date))}</div><div class="blog-card-title">${blogEsc(p.title||p.slug)}</div>${p.summary?`<div class="blog-card-summary">${blogEsc(p.summary)}</div>`:''}</button>`).join('')
+      ? list.map(p=>`<button class="blog-card" data-slug="${blogEsc(p.slug)}"><div class="blog-card-date">${blogEsc(blogFmtDate(p.date))}</div><div class="blog-card-title">${blogEsc(p.title||p.slug)}</div></button>`).join('')
       : `<p class="blog-empty">${blogEsc(t('blog.empty'))}</p>`;
   }).catch(()=>{ blogListEl.innerHTML = `<p class="blog-empty">${blogEsc(t('blog.error'))}</p>`; });
 }
