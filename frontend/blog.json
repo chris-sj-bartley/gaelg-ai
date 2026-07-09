@@ -1,0 +1,9 @@
+{
+  "version": "https://jsonfeed.org/version/1.1",
+  "title": "Gaelg AI",
+  "home_page_url": "https://gaelgai.im/",
+  "feed_url": "https://gaelgai.im/blog.json",
+  "description": "Notes on the Gaelg AI project: AI tools for the Manx language.",
+  "author": { "name": "Chris Bartley", "url": "https://c-bartley.github.io" },
+  "items": []
+}
