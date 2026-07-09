@@ -847,12 +847,38 @@ function collapseHeroToAbout() {
 }
 function expandHero() { heroToggleAt = Date.now(); showHome(); }
 
-splash.addEventListener('wheel', e => {
-  if (heroShown() && e.deltaY > 0 && heroAtBottom() && heroDebounced()) { e.preventDefault(); collapseHeroToAbout(); }
-}, {passive:false});
+// A single physical scroll gesture (trackpad flick / wheel spin) fires a burst
+// of wheel events, and the momentum tail keeps firing for a while after the
+// finger lifts. We treat events less than GESTURE_GAP ms apart as one gesture.
+// A Home⇄About transition may only fire on the *first* event of a gesture, and
+// once it fires we swallow the rest of that gesture's momentum so the freshly
+// revealed page stays pinned at the top — moving on takes a deliberate second
+// scroll. This stops one flick from carrying you from the hero halfway down the
+// About page (and, going the other way, parks you at the top of About until the
+// next scroll brings the hero back down).
+const GESTURE_GAP = 250;
+let lastWheelTs = 0;
+let swallowTail = false;
 window.addEventListener('wheel', e => {
-  if (homeShowsAbout() && e.deltaY < 0 && window.scrollY === 0 && heroDebounced()) expandHero();
-});
+  const now = Date.now();
+  const gestureStart = now - lastWheelTs > GESTURE_GAP;
+  lastWheelTs = now;
+
+  if (swallowTail) {
+    if (gestureStart) swallowTail = false;   // genuine new gesture — release
+    else { e.preventDefault(); return; }     // same momentum tail — eat it
+  }
+  if (!gestureStart) return;                  // mid-gesture: let the page scroll natively
+
+  // Down at the hero's bottom → reveal About, pinned at its top.
+  if (heroShown() && e.deltaY > 0 && heroAtBottom()) {
+    e.preventDefault(); collapseHeroToAbout(); swallowTail = true; return;
+  }
+  // Up at the very top of About → bring the hero back down.
+  if (homeShowsAbout() && e.deltaY < 0 && window.scrollY === 0) {
+    e.preventDefault(); expandHero(); swallowTail = true; return;
+  }
+}, {passive:false});
 let heroTouchY = null;
 splash.addEventListener('touchstart', e => { heroTouchY = e.touches[0].clientY; }, {passive:true});
 splash.addEventListener('touchmove', e => {
