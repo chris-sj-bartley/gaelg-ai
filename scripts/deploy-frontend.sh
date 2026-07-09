@@ -56,6 +56,7 @@ REMOTE="${FRONTEND_DEPLOY_TARGET}:${FRONTEND_DEPLOY_PATH%/}/"
 # --pull. So we exclude them in BOTH directions and only move the app source
 # (index.html, privacy.html, static/).
 EXCLUDES=(
+  --include='/blog/***'  # blog posts (incl. *.md) MUST ship — keep before *.md exclude
   --exclude='*.pem'      # cert.pem, key.pem — TLS material, never in repo
   --exclude='old_*'      # old_index.html and other backups
   --exclude='*.md'       # FRONTEND_CHANGES_REQUIRED.md etc. (server-side notes)

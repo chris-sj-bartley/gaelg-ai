@@ -248,6 +248,38 @@ a.fb-link:hover{color:var(--orange-mid);}
 .about-project h3::after{content:'';flex:1;height:1px;background:var(--rule);}
 .about-project p{font-size:0.97rem;font-weight:300;line-height:1.8;color:#3a3028;}
 
+/* Blog */
+.blog-list{display:flex;flex-direction:column;gap:1rem;}
+.blog-card{display:block;text-align:left;width:100%;background:linear-gradient(135deg,var(--orange-pale) 0%,#fff 60%);border:1.5px solid var(--orange-rule);border-radius:var(--r);padding:1.5rem 1.75rem;box-shadow:0 2px 16px rgba(0,0,0,0.05);cursor:pointer;transition:box-shadow var(--transition),transform 0.12s;font-family:var(--sans);}
+.blog-card:hover{box-shadow:0 6px 28px rgba(0,0,0,0.09);transform:translateY(-2px);}
+.blog-card-date{font-family:var(--mono);font-size:0.63rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--orange-mid);margin-bottom:0.5rem;}
+.blog-card-title{font-family:var(--serif);font-size:1.5rem;color:var(--accent);line-height:1.15;margin-bottom:0.5rem;}
+.blog-card-summary{font-size:0.95rem;font-weight:300;color:#6b5f52;line-height:1.6;}
+.blog-back{font-family:var(--mono);font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--orange-mid);background:none;border:none;cursor:pointer;padding:0;display:inline-flex;align-items:center;gap:0.4em;margin-bottom:1.25rem;transition:color var(--transition);}
+.blog-back:hover{color:var(--accent);}
+.blog-post{background:#fff;border:1.5px solid var(--rule);border-radius:var(--r);padding:2.25rem 2.5rem;box-shadow:0 2px 16px rgba(0,0,0,0.05);}
+.blog-post-date{font-family:var(--mono);font-size:0.63rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--orange-mid);margin-bottom:0.6rem;}
+.blog-post > h1{font-family:var(--serif);font-size:2rem;color:var(--accent);line-height:1.15;margin-bottom:1.25rem;letter-spacing:-0.01em;}
+.blog-prose{font-size:1rem;font-weight:300;color:#3a3028;line-height:1.8;}
+.blog-prose h1{font-family:var(--serif);font-size:1.7rem;color:var(--accent);margin:1.5rem 0 0.75rem;}
+.blog-prose h2{font-family:var(--serif);font-size:1.5rem;color:var(--accent);margin:1.75rem 0 0.6rem;}
+.blog-prose h3{font-family:var(--mono);font-size:1rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--orange-mid);margin:1.5rem 0 0.5rem;}
+.blog-prose p{margin:0 0 1rem;}
+.blog-prose ul,.blog-prose ol{margin:0 0 1rem;padding-left:1.4rem;display:flex;flex-direction:column;gap:0.35rem;}
+.blog-prose li{line-height:1.7;}
+.blog-prose a{color:var(--orange-mid);text-decoration:underline;text-underline-offset:2px;}
+.blog-prose a:hover{color:var(--accent);}
+.blog-prose strong{font-weight:600;color:#2a2018;}
+.blog-prose em{font-style:italic;}
+.blog-prose blockquote{margin:0 0 1rem;padding:0.5rem 0 0.5rem 1.1rem;border-left:3px solid var(--orange-rule);color:#6b5f52;font-style:italic;}
+.blog-prose code{font-family:var(--mono);font-size:0.88em;background:var(--orange-pale);border:1px solid var(--orange-rule);border-radius:5px;padding:0.1em 0.35em;}
+.blog-prose pre{background:#2a2018;color:#f5f0e8;border-radius:var(--r-sm);padding:1rem 1.15rem;overflow-x:auto;margin:0 0 1rem;}
+.blog-prose pre code{background:none;border:none;padding:0;color:inherit;font-size:0.85rem;}
+.blog-prose img{max-width:100%;height:auto;border-radius:var(--r-sm);margin:0.5rem 0 1rem;}
+.blog-prose hr{border:none;border-top:1px solid var(--rule);margin:1.75rem 0;}
+.blog-empty{font-size:0.95rem;font-weight:300;color:#8a7a6a;text-align:center;padding:1.5rem;}
+@media(max-width:640px){.blog-post{padding:1.5rem 1.25rem;}}
+
 footer{background:var(--accent);color:rgba(255,255,255,0.65);text-align:center;padding:2rem;font-family:var(--mono);font-size:0.62rem;letter-spacing:0.08em;}
 footer strong{color:#fff;}
 
@@ -353,6 +385,7 @@ button.action-btn.recording{background:var(--warn)!important;box-shadow:0 2px 10
       <button class="splash-tab-btn" data-tab="listen" data-i18n="tab.listen" onclick="selectSplashTab('listen')">👂 Listen</button>
       <button class="splash-tab-btn" data-tab="translate" data-i18n="tab.translate" onclick="selectSplashTab('translate')">🔄 Translate</button>
       <button class="splash-tab-btn" data-tab="timestamp" data-i18n="tab.timestamp" onclick="selectSplashTab('timestamp')">⏱ Timestamp</button>
+      <button class="splash-tab-btn" data-tab="blog" data-i18n="tab.blog" onclick="selectSplashTab('blog')">📝 Blog</button>
       <button class="splash-tab-btn" data-tab="feedback" data-i18n="tab.feedback" onclick="selectSplashTab('feedback')">💬 Feedback</button>
     </div>
     <button class="hamburger" id="hamburgerBtn" onclick="toggleNav()" aria-label="Toggle menu" aria-expanded="false"><svg class="ham-open" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg><svg class="ham-close" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button>
@@ -607,6 +640,12 @@ button.action-btn.recording{background:var(--warn)!important;box-shadow:0 2px 10
       </div>
     </div>
 
+    <div class="tab-panel" id="tab-blog">
+      <div class="section-intro"><h2 data-i18n="sec.blog.h2">Blog</h2><p data-i18n="sec.blog.p">Notes on the project — progress, releases, and thoughts on Manx language technology.</p></div>
+      <div class="blog-list" id="blogList"><p class="blog-empty" data-i18n="blog.loading">Loading…</p></div>
+      <div id="blogPost" style="display:none;"></div>
+    </div>
+
     <div class="tab-panel" id="tab-feedback">
       <div class="section-intro"><h2 data-i18n="sec.feedback.h2">Feedback</h2><p data-i18n="sec.feedback.p">Tell me what works, what doesn't, or what you'd like to see next. The form is <strong>completely anonymous</strong> — nothing about you is sent unless you write it in the message.</p></div>
       <div class="card card-feedback">
@@ -697,7 +736,15 @@ const T = {
     'tab.listen':         '👂 Listen',
     'tab.translate':      '🔄 Translate',
     'tab.about':          '👤 About',
+    'tab.blog':           '📝 Blog',
     'tab.feedback':       '💬 Feedback',
+    'sec.blog.h2':        'Blog',
+    'sec.blog.p':         'Notes on the project — progress, releases, and thoughts on Manx language technology.',
+    'blog.loading':       'Loading…',
+    'blog.empty':         'No posts yet — check back soon.',
+    'blog.error':         'Posts could not be loaded.',
+    'blog.notfound':      'That post could not be found.',
+    'blog.back':          'All posts',
     'sec.feedback.h2':    'Feedback',
     'sec.feedback.p':     "Tell me what works, what doesn't, or what you'd like to see next. The form is <strong>completely anonymous</strong> — nothing about you is sent unless you write it in the message.",
     'lbl.feedback.topic': 'Topic',
@@ -814,7 +861,7 @@ async function withSpin(fn) {
 
 const splash = document.getElementById('splash');
 
-const VALID_TABS = ['speak','listen','translate','timestamp','about','feedback'];
+const VALID_TABS = ['speak','listen','translate','timestamp','about','blog','feedback'];
 
 // UI only — no history change
 function showTab(name) {
@@ -928,10 +975,112 @@ function goToContact() {
   setTimeout(() => { const el = document.querySelector('.about-contact-section'); if (el) el.scrollIntoView({behavior:'smooth', block:'center'}); }, 150);
 }
 
+// ── Blog (Markdown posts loaded from /blog) ───────────────────────────────
+// Posts live in frontend/blog/: index.json lists them ({slug,title,date,summary,file})
+// and each post is a Markdown file. #blog shows the list; #blog/<slug> a post.
+const blogListEl = document.getElementById('blogList');
+const blogPostEl = document.getElementById('blogPost');
+let blogIndexPromise = null;
+const blogPostCache = {};
+
+function blogEsc(s){ return String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function blogFmtDate(d){
+  const ts = Date.parse(d);
+  return isNaN(ts) ? (d || '') : new Date(ts).toLocaleDateString('en-GB', {year:'numeric', month:'long', day:'numeric'});
+}
+function loadBlogIndex(){
+  if (blogIndexPromise) return blogIndexPromise;
+  blogIndexPromise = fetch('/blog/index.json')
+    .then(r=>{ if(!r.ok) throw 0; return r.json(); })
+    .then(list=>(Array.isArray(list)?list:[]).slice().sort((a,b)=>(Date.parse(b.date)||0)-(Date.parse(a.date)||0)))
+    .catch(err=>{ blogIndexPromise = null; throw err; });   // clear cache so a later visit can retry
+  return blogIndexPromise;
+}
+
+// Minimal Markdown → HTML. Input is HTML-escaped first, so posts can only
+// produce the subset of markup below — no raw HTML / script injection.
+function mdInline(s){
+  s = blogEsc(s);
+  s = s.replace(/!\[([^\]]*)\]\(([^)\s]+)(?:\s+&quot;([^&]*)&quot;)?\)/g,
+    (m,alt,url,title)=>`<img src="${url}" alt="${alt}"${title?` title="${title}"`:''}>`);
+  s = s.replace(/\[([^\]]+)\]\(([^)\s]+)(?:\s+&quot;([^&]*)&quot;)?\)/g, (m,txt,url,title)=>{
+    const safe = /^(https?:|mailto:|\/|#)/i.test(url) ? url : '#';
+    const ext = /^https?:/i.test(safe) ? ' target="_blank" rel="noopener"' : '';
+    return `<a href="${safe}"${ext}${title?` title="${title}"`:''}>${txt}</a>`;
+  });
+  s = s.replace(/`([^`]+)`/g, (m,c)=>`<code>${c}</code>`);
+  s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  s = s.replace(/__([^_]+)__/g, '<strong>$1</strong>');
+  s = s.replace(/(^|[^*])\*(?!\s)([^*]+?)\*/g, '$1<em>$2</em>');
+  return s.replace(/\n/g, '<br>');
+}
+function mdToHtml(src){
+  src = String(src).replace(/\r\n?/g, '\n');
+  const code = [];
+  src = src.replace(/```[^\n]*\n([\s\S]*?)```/g, (m,c)=>` ${code.push(`<pre><code>${blogEsc(c.replace(/\n$/,''))}</code></pre>`)-1} `);
+  const L = src.split('\n'); let out = '', i = 0;
+  const isUL=s=>/^\s*[-*+]\s+/.test(s), isOL=s=>/^\s*\d+[.)]\s+/.test(s), isH=s=>/^#{1,6}\s+/.test(s),
+        isQ=s=>/^\s*>\s?/.test(s), isHR=s=>/^\s*([-*_])(\s*\1){2,}\s*$/.test(s), isTok=s=>/^ \d+ $/.test(s);
+  while(i < L.length){
+    const line = L[i];
+    if(/^\s*$/.test(line)){ i++; continue; }
+    if(isTok(line)){ out += code[+line.replace(/ /g,'')]; i++; continue; }
+    if(isH(line)){ const h=line.match(/^(#{1,6})\s+(.*)$/); out+=`<h${h[1].length}>${mdInline(h[2].trim())}</h${h[1].length}>`; i++; continue; }
+    if(isHR(line)){ out+='<hr>'; i++; continue; }
+    if(isQ(line)){ const b=[]; while(i<L.length&&isQ(L[i])){ b.push(L[i].replace(/^\s*>\s?/,'')); i++; } out+=`<blockquote>${mdToHtml(b.join('\n'))}</blockquote>`; continue; }
+    if(isUL(line)){ const it=[]; while(i<L.length&&isUL(L[i])){ it.push(L[i].replace(/^\s*[-*+]\s+/,'')); i++; } out+='<ul>'+it.map(x=>`<li>${mdInline(x)}</li>`).join('')+'</ul>'; continue; }
+    if(isOL(line)){ const it=[]; while(i<L.length&&isOL(L[i])){ it.push(L[i].replace(/^\s*\d+[.)]\s+/,'')); i++; } out+='<ol>'+it.map(x=>`<li>${mdInline(x)}</li>`).join('')+'</ol>'; continue; }
+    const b=[line]; i++;
+    while(i<L.length && !/^\s*$/.test(L[i]) && !isH(L[i]) && !isQ(L[i]) && !isUL(L[i]) && !isOL(L[i]) && !isHR(L[i]) && !isTok(L[i])){ b.push(L[i]); i++; }
+    out += `<p>${mdInline(b.join('\n').trim())}</p>`;
+  }
+  return out.replace(/ (\d+) /g, (m,x)=>(code[+x] ?? m));
+}
+function stripLeadingH1(md){ return String(md).replace(/^﻿?\s*#\s+.*(?:\r?\n|$)/, ''); }
+
+function renderBlogList(){
+  blogPostEl.style.display = 'none';
+  blogListEl.style.display = '';
+  blogListEl.innerHTML = `<p class="blog-empty">${blogEsc(t('blog.loading'))}</p>`;
+  loadBlogIndex().then(list=>{
+    blogListEl.innerHTML = list.length
+      ? list.map(p=>`<button class="blog-card" data-slug="${blogEsc(p.slug)}"><div class="blog-card-date">${blogEsc(blogFmtDate(p.date))}</div><div class="blog-card-title">${blogEsc(p.title||p.slug)}</div>${p.summary?`<div class="blog-card-summary">${blogEsc(p.summary)}</div>`:''}</button>`).join('')
+      : `<p class="blog-empty">${blogEsc(t('blog.empty'))}</p>`;
+  }).catch(()=>{ blogListEl.innerHTML = `<p class="blog-empty">${blogEsc(t('blog.error'))}</p>`; });
+}
+function renderBlogPost(slug){
+  blogListEl.style.display = 'none';
+  blogPostEl.style.display = '';
+  const back = `<button class="blog-back" onclick="location.hash='blog'">&larr; ${blogEsc(t('blog.back'))}</button>`;
+  window.scrollTo(0,0);
+  if(blogPostCache[slug]){ blogPostEl.innerHTML = back + blogPostCache[slug]; return; }
+  blogPostEl.innerHTML = back + `<p class="blog-empty">${blogEsc(t('blog.loading'))}</p>`;
+  loadBlogIndex().then(list=>{
+    const meta = list.find(p=>p.slug === slug);
+    if(!meta){ blogPostEl.innerHTML = back + `<p class="blog-empty">${blogEsc(t('blog.notfound'))}</p>`; return; }
+    return fetch('/blog/' + (meta.file || slug + '.md')).then(r=>{ if(!r.ok) throw 0; return r.text(); })
+      .then(md=>{
+        const html = `<article class="blog-post"><div class="blog-post-date">${blogEsc(blogFmtDate(meta.date))}</div><h1>${blogEsc(meta.title||slug)}</h1><div class="blog-prose">${mdToHtml(stripLeadingH1(md))}</div></article>`;
+        blogPostCache[slug] = html;
+        blogPostEl.innerHTML = back + html;
+        window.scrollTo(0,0);
+      });
+  }).catch(()=>{ blogPostEl.innerHTML = back + `<p class="blog-empty">${blogEsc(t('blog.error'))}</p>`; });
+}
+function showBlogRoute(slug){ if(slug) renderBlogPost(slug); else renderBlogList(); }
+if(blogListEl) blogListEl.addEventListener('click', e=>{
+  const c = e.target.closest('.blog-card');
+  if(c && c.dataset.slug) location.hash = 'blog/' + c.dataset.slug;
+});
+
 // Resolve the current hash to a view
 function routeFromHash() {
-  const seg = decodeURIComponent(location.hash.replace(/^#\/?/,'')).toLowerCase();
-  if (VALID_TABS.includes(seg)) { showTab(seg); }
+  const raw = decodeURIComponent(location.hash.replace(/^#\/?/,''));
+  const slash = raw.indexOf('/');
+  const seg = (slash === -1 ? raw : raw.slice(0, slash)).toLowerCase();
+  const sub = slash === -1 ? '' : raw.slice(slash + 1);          // e.g. blog/<slug>
+  if (seg === 'blog') { showTab('blog'); showBlogRoute(sub); }
+  else if (VALID_TABS.includes(seg)) { showTab(seg); }
   else if (goingHome) { goingHome = false; heroToggleAt = Date.now(); showTab('about'); }
   else { showHome(); }
 }
