@@ -1,4 +1,4 @@
-# Gaelg AI Platform launched
+# Gaelg AI 1.0 launches
 
 I'm thrilled to announce that the Gaelg AI platform is now live. This is version **1.0**: the first public release, bringing together the speech and language tools I've been building for Manx into one place.
 

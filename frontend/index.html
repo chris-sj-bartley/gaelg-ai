@@ -91,6 +91,7 @@ body.at-home{overflow:hidden;}
 .splash-tab-btn:hover{color:#fff;}
 .splash-tab-btn.active{color:#fff;border-bottom-color:var(--orange-mid);}
 #splashHomeBtn{opacity:0;pointer-events:none;transition:opacity 0.25s;border-right:1px solid rgba(255,255,255,0.18);padding-right:1.2em;margin-right:0.4em;}
+.splash-tab-btn.nav-group-start{border-left:1px solid rgba(255,255,255,0.18);padding-left:1.2em;margin-left:0.4em;}
 #splash.collapsed #splashHomeBtn{opacity:1;pointer-events:auto;}
 
 /* Flanking triskelions — sticky, vertically centred in visible cream area */
@@ -302,6 +303,7 @@ button.action-btn.recording{background:var(--warn)!important;box-shadow:0 2px 10
   .nav-links{display:none;position:fixed;top:116px;left:0;right:0;flex-direction:column;background:var(--accent);box-shadow:0 10px 24px rgba(0,0,0,0.35);border-top:1px solid rgba(255,255,255,0.12);z-index:95;}
   #splash.nav-open .nav-links{display:flex;}
   .nav-links .splash-tab-btn{height:auto;width:100%;justify-content:center;padding:1.15em 1.2em;font-size:0.85rem;letter-spacing:0.08em;margin-bottom:0;border-bottom:0;border-top:1px solid rgba(255,255,255,0.08);}
+  .splash-tab-btn.nav-group-start{border-left:0;margin-left:0;}
   .translate-grid{grid-template-columns:1fr;}
   .card{padding:1.5rem 1.25rem;}
   #splashHero{align-items:flex-start;}
@@ -385,7 +387,7 @@ button.action-btn.recording{background:var(--warn)!important;box-shadow:0 2px 10
       <button class="splash-tab-btn" data-tab="listen" data-i18n="tab.listen" onclick="selectSplashTab('listen')">👂 Listen</button>
       <button class="splash-tab-btn" data-tab="translate" data-i18n="tab.translate" onclick="selectSplashTab('translate')">🔄 Translate</button>
       <button class="splash-tab-btn" data-tab="timestamp" data-i18n="tab.timestamp" onclick="selectSplashTab('timestamp')">⏱ Timestamp</button>
-      <button class="splash-tab-btn" data-tab="blog" data-i18n="tab.blog" onclick="selectSplashTab('blog')">📝 Blog</button>
+      <button class="splash-tab-btn nav-group-start" data-tab="blog" data-i18n="tab.blog" onclick="selectSplashTab('blog')">📝 Blog</button>
       <button class="splash-tab-btn" data-tab="feedback" data-i18n="tab.feedback" onclick="selectSplashTab('feedback')">💬 Feedback</button>
     </div>
     <button class="hamburger" id="hamburgerBtn" onclick="toggleNav()" aria-label="Toggle menu" aria-expanded="false"><svg class="ham-open" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg><svg class="ham-close" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button>
