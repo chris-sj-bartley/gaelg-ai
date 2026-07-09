@@ -1,13 +1,24 @@
-# Introducing the Gaelg AI blog
+# Gaelg AI Platform launched
 
-Welcome to the Gaelg AI blog. This is where I'll post **project updates**, notes on new releases, and the occasional thought on building AI tools for a low-resource, critically endangered language.
+I'm thrilled to announce that the Gaelg AI platform is now live. This is version **1.0**: the first public release, bringing together the speech and language tools I've been building for Manx into one place.
 
-## What to expect
+## What's in 1.0
 
-- Progress on the Speak, Listen, Translate, and Timestamp tools
-- Notes on the data and models behind them
-- Ways the Manx-speaking community can get involved
+- **Speak** turns Manx text into spoken audio.
+- **Listen** transcribes Manx speech into text.
+- **Translate** converts between Manx and English.
+- **Timestamp** aligns a recording with its transcript for subtitles and labelling.
 
-The best way to support Manx is to [learn the language](https://www.learnmanx.com/).
+Everything runs on models trained on Manx language resources, and the whole platform is free to use.
 
-*Gura mie ayd* — thanks for reading.
+## What this means
+
+Reaching 1.0 means the core tools are stable enough for everyday use. They are still experimental, so expect the occasional rough edge, but they are ready for you to try on real tasks.
+
+## What's next
+
+I'll keep improving quality, adding features, and collecting more Manx data to train on. Fixes and updates will be posted here on the blog, so check back to see what's new.
+
+If you'd like to help, whether with data, feedback, or a particular use case, please get in touch through the feedback page.
+
+*Gura mie ayd* for your support, and I hope you find the tools useful.

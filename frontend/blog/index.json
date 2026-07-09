@@ -1,9 +1,9 @@
 [
   {
-    "slug": "hello-world",
-    "title": "Introducing the Gaelg AI blog",
+    "slug": "platform-launch",
+    "title": "Gaelg AI Platform launched",
     "date": "2026-07-09",
-    "summary": "A short note on what this space is for — project updates, releases, and thoughts on building speech technology for Manx.",
+    "summary": "The Gaelg AI platform is now live as version 1.0, bringing the Speak, Listen, Translate, and Timestamp tools together in one place.",
     "file": "2026-07-09-hello-world.md"
   }
 ]
