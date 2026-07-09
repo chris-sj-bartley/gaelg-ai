@@ -111,6 +111,10 @@ body.at-home{overflow:hidden;}
 .section-intro{background:rgba(245,240,232,0.88);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid rgba(212,203,191,0.5);border-radius:var(--r);padding:1.25rem 1.5rem;}
 .section-intro h2{font-family:var(--serif);font-size:1.8rem;color:var(--accent);margin-bottom:0.4rem;}
 .section-intro p{font-size:0.95rem;font-weight:300;color:#6b5f52;line-height:1.6;}
+.section-intro p + p{margin-top:0.7rem;}
+.section-intro ul{margin:0.55rem 0;padding-left:1.3rem;display:flex;flex-direction:column;gap:0.3rem;}
+.section-intro li{font-size:0.95rem;font-weight:300;color:#6b5f52;line-height:1.5;}
+.section-intro ul + p{margin-top:0.7rem;}
 
 .card{background:#fff;border:1.5px solid var(--rule);border-radius:var(--r);padding:2rem 2rem 1.75rem;box-shadow:0 2px 16px rgba(0,0,0,0.05);transition:box-shadow var(--transition);}
 .card:hover{box-shadow:0 6px 28px rgba(0,0,0,0.09);}
@@ -480,7 +484,7 @@ button.action-btn.recording{background:var(--warn)!important;box-shadow:0 2px 10
     </div>
 
     <div class="tab-panel" id="tab-timestamp">
-      <div class="section-intro"><h2 data-i18n="sec.timestamp.h2">Timestamping</h2><p data-i18n="sec.timestamp.p">Upload a Manx recording <strong>and its transcript</strong> to get word- and phrase-level timestamps (forced alignment). Longer recordings are fine here; alignment runs in the background and can take a few minutes.</p></div>
+      <div class="section-intro"><h2 data-i18n="sec.timestamp.h2">Timestamping</h2><div data-i18n="sec.timestamp.p"><p>Upload a Manx recording <strong>and its transcript</strong> to get word- or phrase-level timestamps, useful for subtitles and audio labelling. Longer recordings (up to 30 mins) are fine here. Alignment can take a few minutes.</p><p>This tool works best with:</p><ul><li>High-quality audio</li><li>Non-overlapping speech</li><li>Verbatim transcript (no speaker labels/other metadata)</li><li>Numbers spelled out (e.g., &ldquo;1920&rdquo; &rarr; &ldquo;nineteen twenty&rdquo;)</li><li>Contractions expanded (e.g., &ldquo;Dr.&rdquo; &rarr; &ldquo;Doctor&rdquo;)</li></ul><p>It will work somewhat without these but may not be as reliable. I am working to improve robustness to these conditions.</p></div></div>
 
       <div class="card" style="display:flex;flex-direction:column;gap:1.1rem;">
 
@@ -723,7 +727,7 @@ const T = {
     'btn.transcribe.loading': 'Transcribing\u2026',
     'tab.timestamp':      '\u23f1 Timestamp',
     'sec.timestamp.h2':   'Timestamping',
-    'sec.timestamp.p':    'Upload a Manx recording <strong>and its transcript</strong> to get word- and phrase-level timestamps (forced alignment) \u2014 for subtitles, Audacity labels, or lining up text with audio. Longer recordings are fine here; alignment runs in the background and can take a few minutes.',
+    'sec.timestamp.p':    '<p>Upload a Manx recording <strong>and its transcript</strong> to get word- or phrase-level timestamps, useful for subtitles and audio labelling. Longer recordings (up to 30 mins) are fine here. Alignment can take a few minutes.</p><p>This tool works best with:</p><ul><li>High-quality audio</li><li>Non-overlapping speech</li><li>Verbatim transcript (no speaker labels/other metadata)</li><li>Numbers spelled out (e.g., \u201c1920\u201d \u2192 \u201cnineteen twenty\u201d)</li><li>Contractions expanded (e.g., \u201cDr.\u201d \u2192 \u201cDoctor\u201d)</li></ul><p>It will work somewhat without these but may not be as reliable. I am working to improve robustness to these conditions.</p>',
     'card.ts.upload':     'Upload audio',
     'card.ts.transcript': 'Paste the transcript',
     'placeholder.ts':     'Paste the transcript of the recording here\u2026 (plain text; numbers written as words work best)',
