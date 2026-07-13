@@ -583,7 +583,7 @@ button.action-btn.recording{background:var(--warn)!important;box-shadow:0 2px 10
               <a href="mailto:csjbartley1@sheffield.ac.uk" class="contact-pill">✉ Email</a>
               <a href="https://www.linkedin.com/in/chris-bartley-895b811ab/" target="_blank" class="contact-pill">💼 LinkedIn</a>
               <a href="https://orcid.org/0009-0007-2882-6268" target="_blank" class="contact-pill">🔬 ORCID</a>
-              <a href="https://github.com/c-bartley" target="_blank" class="contact-pill">⌨ GitHub</a>
+              <a href="https://github.com/chris-sj-bartley" target="_blank" class="contact-pill">⌨ GitHub</a>
             </div>
           </div>
         </div>
@@ -979,8 +979,8 @@ function goToContact() {
 }
 
 // ── Blog (posts come from the personal Jekyll site's JSON Feed) ────────────
-// The canonical blog is c-bartley.github.io. Its Jekyll build publishes a JSON
-// Feed 1.1 document at https://c-bartley.github.io/blog.json (GitHub Pages sends
+// The canonical blog is chris-sj-bartley.github.io. Its Jekyll build publishes a JSON
+// Feed 1.1 document at https://chris-sj-bartley.github.io/blog.json (GitHub Pages sends
 // permissive CORS, so we fetch it directly, client-side — no proxy). We render
 // its items under #blog; #blog/<slug> shows a single post (slug derived from the
 // item URL). content_html is already rendered by Jekyll and injected into our
@@ -995,7 +995,7 @@ function blogFmtDate(d){
   const ts = Date.parse(d);
   return isNaN(ts) ? (d || '') : new Date(ts).toLocaleDateString('en-GB', {year:'numeric', month:'long', day:'numeric'});
 }
-const BLOG_FEED_URL = 'https://c-bartley.github.io/blog.json';   // canonical blog (JSON Feed 1.1)
+const BLOG_FEED_URL = 'https://chris-sj-bartley.github.io/blog.json';   // canonical blog (JSON Feed 1.1)
 // JSON Feed items carry no slug; derive one from the post URL's last path segment.
 function blogSlugFromUrl(u){
   try { const p = new URL(u).pathname.split('/').filter(Boolean); return p[p.length-1] || String(u); }
