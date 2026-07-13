@@ -20,11 +20,17 @@ BASE=${TIMESTAMPER_BASE:-/exp/exp1/acp24csb}
 APPTAINER_BIN=${APPTAINER_BIN:-$BASE/tools/apptainer-env/bin}
 SIF=${TIMESTAMPER_SIF:-$BASE/model_instances/manx_timestamper/timestamper.sif}
 SCRATCH=${TIMESTAMPER_SCRATCH:-$BASE/tmp}
+# Patched phrase-output script (pause-based phrasing) bind-mounted over the copy
+# baked into the SIF, so we get pause-split phrases without rebuilding the image.
+PATCHED_CTM=${TIMESTAMPER_PATCHED_CTM:-$BASE/model_instances/manx_timestamper/local/ctm_to_outputs.py}
 
 # --- defaults ---------------------------------------------------------------
 nj=32
 mode=both
 formats=csv,srt,txt
+# Pause (seconds) between aligned words that starts a new phrase. Adjustable via
+# the TIMESTAMP_PHRASE_GAP_SEC env (e.g. set it in the systemd service).
+phrase_gap=${TIMESTAMP_PHRASE_GAP_SEC:-0.4}
 
 # --- parse our own options, leave positionals ------------------------------
 pos=()
@@ -64,9 +70,15 @@ export APPTAINER_CACHEDIR="$SCRATCH/apptainer-cache"
 export PATH="$APPTAINER_BIN:$PATH"   # so apptainer finds squashfuse (mounts the SIF instead of extracting)
 mkdir -p "$APPTAINER_TMPDIR" "$APPTAINER_CACHEDIR"
 
+# Bind-mount the patched phrase-output script over the baked-in one, if present
+# (falls back to the SIF's own copy otherwise).
+gap_bind=()
+[ -f "$PATCHED_CTM" ] && gap_bind=(-B "$PATCHED_CTM:/opt/timestamper/local/ctm_to_outputs.py")
+
 rc=0
 "$APPTAINER_BIN/apptainer" run \
-  -B /exp/exp1 -B "$ctmp:/tmp" --env TMPDIR=/tmp \
+  -B /exp/exp1 -B "$ctmp:/tmp" "${gap_bind[@]}" \
+  --env TMPDIR=/tmp --env "TIMESTAMP_PHRASE_GAP_SEC=$phrase_gap" \
   "$SIF" \
   --mode "$mode" --formats "$formats" --nj "$nj" --cleanup true \
   "$audio" "$transcript" "$outdir" || rc=$?

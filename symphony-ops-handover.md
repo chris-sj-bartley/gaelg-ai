@@ -88,7 +88,7 @@ chmod 600 ~/symphony/.env
 cat > ~/symphony/projects/web_platform/WORKFLOW.md <<'EOF'
 # Manx AI web-platform workflow
 
-Repo: https://github.com/c-bartley/gaelg-ai
+Repo: https://github.com/chris-sj-bartley/gaelg-ai
 Working dir: /exp/exp1/acp24csb/web_platform_staging   (staging branch)
 
 ## Safe classes (auto-merge eligible after CI passes)
