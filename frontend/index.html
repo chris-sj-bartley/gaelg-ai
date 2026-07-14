@@ -40,7 +40,10 @@
 html{scroll-behavior:smooth;}
 body{font-family:var(--sans);background:var(--paper);color:var(--ink);min-height:100vh;display:flex;flex-direction:column;}
 
-.site-header{position:sticky;top:0;z-index:100;background:rgba(245,240,232,0.93);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--rule);box-shadow:0 2px 16px rgba(0,0,0,0.06);}
+/* The hairline is a shadow, not a border: a border would add a 65th pixel of layout
+   height, pushing .content-bg-wrap 1px below where #splash (fixed at top:64px) ends
+   and exposing a sliver of page background under the nav. */
+.site-header{position:sticky;top:0;z-index:100;background:rgba(245,240,232,0.93);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 1px 0 var(--rule),0 2px 16px rgba(0,0,0,0.06);}
 .header-inner{max-width:1100px;margin:0 auto;padding:0 2rem;height:64px;display:flex;align-items:center;justify-content:space-between;}
 .wordmark{font-family:var(--serif);font-size:1.7rem;letter-spacing:-0.02em;color:var(--accent);line-height:1;text-decoration:none;display:flex;align-items:center;gap:0.55rem;}
 .wordmark em{font-style:italic;color:var(--accent-lit);}
@@ -656,6 +659,7 @@ button.action-btn.recording{background:var(--warn)!important;box-shadow:0 2px 10
               <option value="Speak (text-to-speech)">Speak (text to speech)</option>
               <option value="Listen (speech recognition)">Listen (speech recognition)</option>
               <option value="Translate">Translate</option>
+              <option value="Timestamp (forced alignment)">Timestamp (forced alignment)</option>
               <option value="Website">Website</option>
               <option value="Other">Other</option>
             </select>
